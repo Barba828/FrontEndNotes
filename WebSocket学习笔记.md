@@ -360,3 +360,4 @@ beforeRouteLeave(to, from, next) {
 [阮一峰博客](http://www.ruanyifeng.com/blog/2017/05/websocket.html)
 [MDN Docs](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 [nodejs-websocket](https://www.npmjs.com/package/nodejs-websocket)
+[websocket聊天室实战](https://www.jianshu.com/p/f0baf93a3795)
