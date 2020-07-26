@@ -356,7 +356,37 @@ beforeRouteLeave(to, from, next) {
 为了避免中间会出现一些由于链接异常断开，导致后端服务抛出异常挂掉的情况
 记住前端关闭页面或者刷新页面时，先把连接关掉，每次进入页面时创建连接，然后后端将由于异常关闭导致的出错 try/catch 一下，避免抛出异常，阻塞进程
 
-## 五、参考
+## 五、webSocketd服务器
+
+阮一峰推荐WebSocket 服务器：[Websocketd](http://websocketd.com/)。
+
+它的最大特点，就是后台脚本不限语言，标准输入（stdin）就是 WebSocket 的输入，标准输出（stdout）就是 WebSocket 的输出
+服务端后台脚本:`my-program`
+```java
+class Counter {
+  public static void main(String [] args) throws Exception {
+    for (int i=0; i<10; i++) {
+      System.out.println(i);
+      Thread.sleep(500);
+    }
+  }
+}
+```
+开始程序:
+```bash
+$ websocketd --port=8080 my-program
+```
+客户端程序:
+```js
+var ws = new WebSocket('ws://localhost:8080/');
+
+ws.onmessage = function(event) {
+  console.log('Count is: ' + event.data);
+};
+```
+
+## 六、参考
+
 [阮一峰博客](http://www.ruanyifeng.com/blog/2017/05/websocket.html)
 [MDN Docs](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 [nodejs-websocket](https://www.npmjs.com/package/nodejs-websocket)
