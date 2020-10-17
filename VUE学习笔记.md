@@ -106,6 +106,7 @@ myRefresh(callback) {
 ```
 
 ##### vm.$on( event, callback )
+
 监听事件
 监听当前实例上的自定义事件，事件可以由 vm.$emit 触发，回调函数会接收所有传入事件触发函数的额外参数。
 $on监听函数需要声明在$emit函数之前（例如在`mount()`钩子函数时就声明），否则监听不到
@@ -117,6 +118,19 @@ vm.$on('test',  msg => {
 })
 
 vm.$emit('test', 'hi')
+```
+
+##### 例：手动定义scrollEnd事件
+
+```js
+let timer;
+window.onscroll = function () {
+  clearTimeout(timer);
+  timer = setTimeout(function () {
+    //执行scrollEnd()方法
+    scrollEnd()
+  }, 100)
+}
 ```
 
 #### v-model双向绑定
@@ -540,3 +554,49 @@ axios.post('/user', {
       .finally(() => (this.loading = false))
   }
 ```
+
+## 计算属性
+computed
+### 计算属性传参
+
+- return返回值直接写方法
+- 该方法可以是`function () {}`匿名方法，`() => {}`匿名方法，或者`methods`中的方法
+
+```js
+computed: {
+    itemStyle() {
+        return index => { width: this.newItemLength + 'px' };
+    },
+}
+```
+
+## 文本渲染
+### v-text
+v-text是用于操作纯文本，它会替代显示对应的数据对象上的值。当绑定的数据对象上的值发生改变，插值处的内容也会随之更新。注意：此处为单向绑定，数据对象上的值改变，插值会发生变化；但是当插值发生变化并不会影响数据对象的值。
+> 其中：`v-text`可以简写为`{{}}`,并且支持逻辑运算
+
+vue中有个指令叫做 v-once 可以通过v-once与v-text结合，实现仅执行一次性的插值
+```html
+<span v-once>这个将不会随msg属性的改变而改变: {{ msg }}</span>
+```
+
+### v-html
+v-html用于输出html，它与v-text区别在于v-text输出的是纯文本，浏览器不会对其再进行html解析，但v-html会将其当html标签解析后输出
+```html
+<div id="app">
+    <p v-html="myHtml"></p>
+</div>
+```
+```js
+let app = new Vue({
+    el: "#app",
+    data: {
+    	myHtml: "<span style='color:red'>自定义标签</span>"
+    }
+});
+```
+
+
+# 常见BUG
+### Cannot set property 'render' of undefined
+组件里写了script标签，没写 export default {}

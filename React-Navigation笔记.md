@@ -253,3 +253,23 @@ true`或 显示或隐藏选项卡栏，如果未设置，则默认为 。`false`
 离开屏幕时是否应卸载此屏幕。取消安装屏幕将重置屏幕中的任何本地状态以及屏幕中嵌套导航器的状态。默认值为 。`false`
 
 通常，我们不建议启用此道具，因为用户不希望在切换选项卡时丢失其导航历史记录。如果您启用此道具，请考虑这是否真的会为用户提供更好的体验。
+
+### 生命周期
+
+#### focus
+路由聚焦时触发该监听函数
+```js
+const unsubscribe = navigation.addListener('focus', () => {
+    // Screen was focused
+    // Do something
+});
+```
+#### blur
+路由失焦时触发该监听函数
+```js
+const unsubscribe = navigation.addListener('blur', () => {
+    // Screen was focused
+    // Do something
+});
+```
+

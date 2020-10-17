@@ -118,7 +118,7 @@ ws.onopen = function () {
 
 #### webSocket.onclose
 
-连接关闭后回调函数
+连接关闭后回调函数（即调用`ws.close()`方法或者失去连接后）
 
 ```javascript
 ws.onclose = function(event) {
