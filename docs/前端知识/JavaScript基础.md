@@ -316,14 +316,39 @@ colors.length = 2;
 alert(colors[2]);
 ```
 - 检测数组方法Array.isArray()在不同的全局环境中更实用（相较于instanceof）
+
 - 栈方法push()、pop() LIFO
+
 - 队列方法push()、shift() FIFO
+
 - 反转方法reverse()
+
 - 排序方法sort()，基于toString()后的字符串大小排序，可传入参数：比较函数，sort(compare)
+
 - 操作方法concat() slice() splice() 
+
 - 位置方法indexOf() lastIndexof()
+
 - 迭代方法
+
 - 归并方法
+
+#### 数组转字符串
+`Array.join()`将数组中所有元素放到一个字符串中，并用指定的分隔符进行分割
+```js
+const a = [1, 2, 3]
+
+a.join(',')  // "1,2,3"
+a.join('_') // "1_2_3"
+```
+#### 字符串转数组
+`String.split()`将字符串以指定的分隔符分割成数组
+
+```js
+const a = '720_1_6'
+
+a.split('_')  // [720, 1, 6]
+```
 
 ### Data类型
 

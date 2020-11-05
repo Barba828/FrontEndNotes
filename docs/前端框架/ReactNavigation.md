@@ -254,12 +254,55 @@ true`或 显示或隐藏选项卡栏，如果未设置，则默认为 。`false`
 
 通常，我们不建议启用此道具，因为用户不希望在切换选项卡时丢失其导航历史记录。如果您启用此道具，请考虑这是否真的会为用户提供更好的体验。
 
+### Drawer标签栏
+```js
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Drawer.Navigator initialRouteName="Home">
+        <Drawer.Screen name="Home" component={HomeScreen} />
+        <Drawer.Screen name="Notifications" component={NotificationsScreen} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
+```
+
+#### 抽屉方法
+
+##### 开关
+
+```js
+// 打开抽屉
+navigation.openDrawer();
+// 关闭抽屉
+navigation.closeDrawer();
+// 切换抽屉
+navigation.toggleDrawer();
+```
+
+##### 调度
+
+```js
+navigation.dispatch(DrawerActions.openDrawer());
+navigation.dispatch(DrawerActions.closeDrawer());
+navigation.dispatch(DrawerActions.toggleDrawer());
+```
+
+##### 状态
+
+```js
+import { useIsDrawerOpen } from '@react-navigation/drawer';
+// 判断抽屉开关状态
+const isDrawerOpen = useIsDrawerOpen();
+```
+
 ### 生命周期
 
 #### focus
 路由聚焦时触发该监听函数
 ```js
-const unsubscribe = navigation.addListener('focus', () => {
+navigation.addListener('focus', () => {
     // Screen was focused
     // Do something
 });
@@ -267,7 +310,7 @@ const unsubscribe = navigation.addListener('focus', () => {
 #### blur
 路由失焦时触发该监听函数
 ```js
-const unsubscribe = navigation.addListener('blur', () => {
+navigation.addListener('blur', () => {
     // Screen was focused
     // Do something
 });
