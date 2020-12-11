@@ -170,3 +170,42 @@ Math.round(5/2)　　// 3
 // 取余
 6%4　　// 2
 ```
+
+### 计算当前月份有多少天
+
+```js
+// 第一种方式
+function getCountDays(){
+   var curDate = new Date();
+   // 获取当前月份
+   var curMonth = curDate.getMonth();
+   // 实际月份比curMonth大1，下面将月份设置为下一个月
+   curDate.setMonth(curMonth+1);
+   // 将日期设置为0，表示自动计算为上个月（这里指的是当前月份）的最后一天
+   curDate.setDate(0);
+   // 返回当前月份的天数
+   return curDate.getDate();
+}
+getCountDays();
+
+
+// 第二种方式
+// 计算当前月份有多少天
+function getCountDays(){
+   var curDate = new Date();
+   // 获取当前月份
+   var curMonth = curDate.getMonth();
+   // 将日期设置为32，表示自动计算为下个月的第几天（这取决于当前月份有多少天）
+   curDate.setDate(32);
+   // 返回当前月份的天数
+   return 32-curDate.getDate();
+}
+getCountDays();
+
+// 计算指定月份 天数
+function GetDays(year, month){
+   var d = new Date(year, month, 0);
+   return d.getDate();
+}
+```
+

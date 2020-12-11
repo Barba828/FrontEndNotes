@@ -49,7 +49,7 @@ UNSAFE_componentWillReceiveProps(nextProps) {
 // 更新状态
 static getDerivedStateFromProps(nextProps, prevState) {
     //静态方法内禁止访问this
-    if (nextProps.email !== prevState.email) {
+    if (nextProps.email !== prevState.value) {
         //通过对比nextProps和prevState，返回一个用于更新状态的state对象，可理解返回this.setState({})
         return {
             value: nextProps.email,
@@ -67,4 +67,33 @@ componentDidUpdate(prevProps, prevState, snapshot){
 ```
 
 
+# 常见错误
+## 运行报错
 
+#### error Invalid regular expression: /(.*\\__fixtures__\\.*|node_modules[\\\]react[\\\]dist[\\\].*|webs
+windows 电脑 执行 react-native 项目，报错如下：
+```sh
+error Invalid regular expression: 
+/(.*\\__fixtures__\\.*|node_modules[\\\]react[\\\]dist[\\\].*|website\\node_modules\\.
+*|heapCapture\\bundle\.js|.*\\__tests__\\.*)$/:
+ Unterminated character class. Run CLI with --verbose flag for more details.
+```
+##### 解决方法 ：
+
+找到这个文件：
+
+```sh
+\node_modules\metro-config\src\defaults\blacklist.js
+```
+
+替换内容为：
+
+```js
+var sharedBlacklist = [
+  /node_modules[\/\\]react[\/\\]dist[\/\\].*/,
+  /website\/node_modules\/.*/,
+  /heapCapture\/bundle\.js/,
+  /.*\/__tests__\/.*/
+];
+```
+原来以为这个报错是因为 windows 系统导致的，所以要对内容进行转义，后来发现其他同事windows系统并未有此现象，个人分析原因可能是命令工具所致
