@@ -394,3 +394,69 @@ var sum = function (n1,n2){
 	return n1 + n2;
 }
 ```
+
+#### arguments
+
+函数实际上是访问了函数体中一个名为 [`arguments`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions_and_function_scope/arguments) 的内部对象，这个对象就如同一个类似于数组的对象一样，包括了所有被传入的参数。让我们重写一下上面的函数，使它可以接收任意个数的参数：
+```js
+function avg() {
+    var sum = 0;
+    for (var i = 0, j = arguments.length; i < j; i++) {
+        sum += arguments[i];
+    }
+    return sum / arguments.length;
+}
+avg(2, 3, 4, 5); // 3.5
+```
+#### ...args 剩余参数
+为了使代码变短一些，我们可以使用剩余参数来替换arguments的使用。在这方法中，我们可以传递任意数量的参数到函数中同时尽量减少我们的代码。这个剩余参数操作符在函数中以：...variable 的形式被使用，它将包含在调用函数时使用的未捕获整个参数列表到这个变量中。我们同样也可以将 for 循环替换为 for...of 循环来返回我们变量的值。
+
+```js
+function avg(...args) {
+  var sum = 0;
+  for (let value of args) {
+    sum += value;
+  }
+  return sum / args.length;
+}
+avg(2, 3, 4, 5); // 3.5
+```
+在上面这段代码中，所有被传入该函数的参数都被变量 args 所持有。
+
+需要注意的是，无论“剩余参数操作符”被放置到函数声明的哪里，它都会把除了自己之前的所有参数存储起来。比如函数：function avg(firstValue, ...args) 会把传入函数的第一个值存入 firstValue，其他的参数存入 args。这是虽然一个很有用的语言特性，却也会带来新的问题。
+
+剩余参数和 `arguments`对象之间的区别主要有三个：
+
+- 剩余参数只包含那些没有对应形参的实参，而 `arguments` 对象包含了传给函数的所有实参。
+- `arguments`对象不是一个真正的数组，而剩余参数是真正的 `Array`实例，也就是说你能够在它上面直接使用所有的数组方法，比如 `sort`，`map`，`forEach`或`pop`。
+- `arguments`对象还有一些附加的属性 （如`callee`属性）。
+
+#### apply
+
+`avg()` 函数只接受逗号分开的参数列表 -- 但是如果你想要获取一个数组的平均值怎么办,JavaScript 允许你通过任意函数对象的 `apply()` 方法来传递给它一个数组作为参数列表。
+
+```js
+avg.apply(null, [2, 3, 4, 5]); // 3.5
+```
+
+传给 `apply()` 的第二个参数是一个数组，它将被当作 `avg()` 的参数列表使用，至于第一个参数 `null`，代表this对象，这也正说明了一个事实——函数也是对象。
+
+通过使用[展开语法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Spread_syntax)，你也可以获得同样的效果。
+
+比如说：`avg(...numbers)`
+
+#### call
+apply() 有一个姐妹函数，名叫 call，它也可以允许你设置 this，但它带有一个扩展的参数列表而不是一个数组。
+
+```js
+function lastNameCaps() {
+    return this.last.toUpperCase();
+}
+var s = new Person("Simon", "Willison");
+lastNameCaps.call(s);
+// 和以下方式等价
+s.lastNameCaps = lastNameCaps;
+s.lastNameCaps();
+```
+
+### [重新介绍Js](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/A_re-introduction_to_JavaScript)
