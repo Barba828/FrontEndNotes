@@ -148,7 +148,15 @@ class User{
     } 
 }
 ```
-
-3.继承
-
-  class VipUser extends User{    constructor(name,pass,level){      super(name,pass);      this.level = level;    }    showLevel(){      alert(this.level)    }  }，
+3. 继承
+```js
+class VipUser extends User{
+    constructor(name,pass,level){      
+        super(name,pass);
+        this.level = level;
+    }
+    showLevel(){
+        alert(this.level)
+    }
+}
+```

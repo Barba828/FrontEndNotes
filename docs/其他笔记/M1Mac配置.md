@@ -67,7 +67,7 @@ echo 'export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles
 source ~/.zshrc
 ```
 
-### ARM 版 Mac Homebrew
+### ARM 版路径
 
 根据《文件系统层次结构标准》（[Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/index.html)，主要为 Linux 系统制定，但对具有共同 UNIX 基因的 macOS 也有参考价值）：
 

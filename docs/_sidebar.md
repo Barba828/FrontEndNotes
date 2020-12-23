@@ -22,5 +22,5 @@
 ** [Yarn基础](Node/Yarn基础.md)
 
 * 其他笔记
-** [M1 Mac配置](其他笔记/Mac配置.md)
+** [M1 Mac配置](其他笔记/M1Mac配置.md)
 ** [Sqlite笔记](其他笔记/Sqlite笔记.md)

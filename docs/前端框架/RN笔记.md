@@ -65,9 +65,39 @@ componentDidUpdate(prevProps, prevState, snapshot){
     }
 }
 ```
+## 官方方法
 
+### DeviceEventEmitter
+react-native中自定义事件监听时使用插件DeviceEventEmitter实现
+
+注册通知：
+```js
+import  { DeviceEventEmitter } from 'react-native';
+//…
+//调用事件通知
+DeviceEventEmitter.emit('xxxName’,param);
+//xxxName:通知的名称 param：发送的消息（传参）
+```
+接收通知：
+```js
+//开始监听
+componentDidMount(){
+    /**
+    * @xxxName :事件名称
+    * @param：事件参数
+    */
+	this.listener = DeviceEventEmitter.addListener('xxxName',(param)=>{ });
+}
+
+//移除监听
+componentWillUnmount(){
+      this.listener.remove();
+  }
+
+```
 
 # 常见错误
+
 ## 运行报错
 
 #### error Invalid regular expression: /(.*\\__fixtures__\\.*|node_modules[\\\]react[\\\]dist[\\\].*|webs
