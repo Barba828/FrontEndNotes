@@ -65,6 +65,63 @@ componentDidUpdate(prevProps, prevState, snapshot){
     }
 }
 ```
+## 动画
+
+### Animated.Value
+声明动画值
+```js
+const _value = new Animated.Value(0);
+```
+#### setValue
+设置动画值
+```js
+_value.setValue(100);
+```
+#### setOffset
+设置偏移量，动画值变动计算仍不变，结果会加上偏移量
+```js
+_value.setOffset(100);
+```
+#### flattenOffset
+合并偏移量到动画值，并将偏移量设为0
+```js
+//_value值合并偏移量100
+_value.setOffset(100);
+_value.flattenOffset();
+//即等于
+_value.setOffset(100);
+_value.setOffset(0);
+_value.setValue(100);
+```
+#### extractOffset
+将偏移量设置为动画当前值，并将动画值设为0
+```js
+//_value值动画变动到了100
+_value.setValue(100);
+_value.extractOffset();
+//即等于
+_value.setValue(100);
+_value.setOffset(100);
+_value.setValue(0);
+```
+#### addListener
+监听动画值，Animated.Value是无法直接取值的，做判断等条件时需要取值
+```js
+_value.addListener(state=>{
+	//读取 _value 的值
+	console.log(state.value)
+})
+```
+#### interpolate
+插值函数
+```js
+_value.interpolate({
+	inputRange:Array,//动画变化值
+	outputRange:Array,//映射输出变化值
+	...
+})
+```
+
 ## 官方方法
 
 ### DeviceEventEmitter
