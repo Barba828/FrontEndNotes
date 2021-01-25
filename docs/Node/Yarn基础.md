@@ -116,3 +116,31 @@ yarn cache clean # 清除缓存
 	比如说你的项目模块依赖：@1.2.1代表这个模块的版本。在你安装A的时候需要安装依赖C和D，很多依赖不会指定版本号，
 	默认会安装最新的版本，这样就会出现出题：比如今天安装模块的时候C和D是某一个版本，而当以后C、D更新的时候，再次安装模块就会安装C和D的最新版本。如果新的版本无法兼容你的项目，你的程序可能就会出BUG，甚至无法运行。
 	这就是npm弊端，而yarn为解决这个问题推出了yarn.lock的机制。
+
+# 技巧
+## 改变 yarn 全局安装位置
+```sh
+yarn config set global-folder "D:\yarnData\global"
+```
+
+## 改变 yarn 缓存位置
+```sh
+yarn config set cache-folder "D:\yarnData\cache"
+```
+在我们使用 全局安装 包的时候，会在 “D:\Software\yarn\global” 下生成node_modules\.bin目录
+
+## 改变yarn bin位置
+```sh
+yarn config set prefix D:\yarnData\global\bin
+```
+我们需要将D:\Software\yarn\global\bin整个目录添加到系统环境变量中去，否则通过yarn 添加的全局包 在cmd 中是找不到的。
+```sh
+#检查当前yarn 的 bin的 位置
+yarn global bin
+#检查当前 yarn 的 全局安装位置
+yarn global dir
+```
+## 设置淘宝源
+```sh
+yarn config set registry https://registry.npm.taobao.org/
+```

@@ -67,8 +67,8 @@ componentDidUpdate(prevProps, prevState, snapshot){
 ```
 ## 动画
 
-### Animated.Value
-声明动画值
+### 一维动画 Animated.Value
+声明一维动画标量值
 ```js
 const _value = new Animated.Value(0);
 ```
@@ -121,6 +121,92 @@ _value.interpolate({
 	...
 })
 ```
+
+### 二维动画 Animated.ValueXY
+二维动画标量值
+#### getLayout()
+将动画值赋值{x, y}到样式style的{left, top}属性中
+```js
+style={this.state.anim.getLayout()}
+```
+#### getTranslateTransform()#
+getTranslateTransform();
+将动画值赋值{x, y}到样式style.transform.translation属性中（即{translateX,translateY}）
+```js
+style={{
+  transform: this.state.anim.getTranslateTransform()
+}}
+```
+
+### 视图布局动画 LayoutAnimation
+视图布局动画
+当页面Dom布局变化时，自动将视图运动到它们新的位置上。
+一个常用的调用此 API 的办法是在状态更新前调用，注意如果要在Android上使用此动画，则需要在代码中启用：
+
+```js
+import { UIManager } from 'react-native';
+
+//这段代码应该写在任何组件加载之前，比如可以写到 index.js 的开头
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
+```
+#### configureNext()
+计划下一次布局要发生的动画
+```js
+static configureNext(config, onAnimationDidEnd?, onAnimationDidFail?)
+```
+##### config
+- duration 动画持续时间，单位是毫秒。
+- create，配置创建新视图时的动画。（参阅Anim类型）
+- update，配置被更新的视图的动画。（参阅Anim类型）
+- delete，配置被移除的视图的动画。（参阅Anim类型）
+配置详见[官网文档](https://reactnative.cn/docs/layoutanimation#spring)
+##### 例
+```jsx
+const App = () => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <View style={style.container}>
+      <TouchableOpacity
+        onPress={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+          setExpanded(!expanded);
+        }}
+      >
+        <Text>Press me to {expanded ? "collapse" : "expand"}!</Text>
+      </TouchableOpacity>
+      {expanded && (
+        <View style={style.tile}>
+          <Text>I disappear sometimes!</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+```
+#### create()
+用来创建configureNext所需的 config 参数的辅助函数。
+```js
+static create(duration, type, creationProp)
+```
+##### 例
+```js
+  const toggleBox = () => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        500,
+        LayoutAnimation.Types.spring,
+        LayoutAnimation.Properties.scaleXY
+      )
+    );
+    setExpanded(!expanded);
+  };
+```
+
 
 ## 官方方法
 
