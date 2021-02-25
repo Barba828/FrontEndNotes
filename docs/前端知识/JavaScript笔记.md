@@ -1,4 +1,5 @@
-1. parseFloat 解析一个字符串，并返回一个浮点数
+### 格式化数字
+2. 1. parseFloat 解析一个字符串，并返回一个浮点数
 2. toFixed 把数字转换为字符串，结果的小数点后有指定位数的数字
 3. Math.round 把一个数字舍入为最接近的整数
 4. toPrecision 把数字格式化为指定的长度
@@ -17,6 +18,16 @@ var f = num.toPrecision();//15.7857，无参数，返回原数字
 var g = num.toPrecision(1);//2e+1，参数小于整数部分位数，返回科学计数
 var h = num.toPrecision(3);//15.8，也是有四舍五入
 var i = num.toPrecision(10);//15.78570000，长度不够补0
+```
+### 随机数
+```js
+Math.ceil(Math.random()*10);     // 获取从 1 到 10 的随机整数，取 0 的概率极小。
+
+Math.round(Math.random());       // 可均衡获取 0 到 1 的随机整数。
+
+Math.floor(Math.random()*10);    // 可均衡获取 0 到 9 的随机整数。
+
+Math.round(Math.random()*10);    // 基本均衡获取 0 到 10 的随机整数，其中获取最小值 0 和最大值 10 的几率少一半。
 ```
 
 
