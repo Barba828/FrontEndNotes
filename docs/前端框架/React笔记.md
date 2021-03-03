@@ -760,6 +760,15 @@ render() {
 }
 ```
 
+#### [Ref](https://react.docschina.org/docs/refs-and-the-dom.html)
+
+React 支持一个特殊的、可以附加到任何组件上的 `ref` 属性。此属性可以是一个由 [`React.createRef()` 函数](https://react.docschina.org/docs/react-api.html#reactcreateref)创建的对象、或者一个回调函数、或者一个字符串（遗留 API）。当 `ref` 属性是一个回调函数时，此函数会（根据元素的类型）接收底层 DOM 元素或 class 实例作为其参数。这能够让你直接访问 DOM 元素或组件实例。
+
+谨慎使用 ref。如果你发现自己经常使用 ref 来在应用中“实现想要的功能”，你可以考虑去了解一下[自上而下的数据流](https://react.docschina.org/docs/lifting-state-up.html)。
+
+#### 协调
+当组件的 props 或 state 发生变化时，React 通过将最新返回的元素与原先渲染的元素进行比较，来决定是否有必要进行一次实际的 DOM 更新。当它们不相等时，React 才会更新 DOM。这个过程被称为“协调”。
+
 #### Fiber
 
 除了进程（Process）和线程（Thread）的概念，在计算机科学中还有一个概念叫做 Fiber，英文含义就是“纤维”，意指比 Thread 更细的线，也就是比线程(Thread)控制得更精密的并发处理机制。

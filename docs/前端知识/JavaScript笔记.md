@@ -220,3 +220,272 @@ function GetDays(year, month){
 }
 ```
 
+## Promise
+### promise构造函数
+
+规范没有指明如何书写构造函数，那就参考ES6的构造方式：
+
+```js
+const promise = new Promise(function(resolve, reject) {
+  // ... some code
+  if (/* 异步操作成功 */){
+    resolve(value);
+  } else {
+    reject(error);
+  }
+});
+```
+
+### 手动实现
+
+#### 基本功能
+
+```js
+//Promise 的三种状态  (满足要求 -> Promise的状态)
+const PENDING = "pending";
+const FULFILLED = "fulfilled";
+const REJECTED = "rejected";
+
+class MyPromise {
+  constructor(fn) {
+    //当前状态
+    this.state = PENDING;
+    //终值:FULFILLED状态
+    this.value = null;
+    //拒因:REJECTED状态
+    this.reason = null;
+    //成功态回调队列
+    this.onFulfilledCallbacks = [];
+    //拒绝态回调队列
+    this.onRejectedCallbacks = [];
+
+    //成功态回调
+    const resolve = (value) => {
+      // 使用macro-task机制(setTimeout),确保onFulfilled异步执行,且在 then 方法被调用的那一轮事件循环之后的新执行栈中执行。
+      setTimeout(() => {
+        if (this.state === PENDING) {
+          // pending(等待态)迁移至 fulfilled(执行态),保证调用次数不超过一次。
+          this.state = FULFILLED;
+          // 终值
+          this.value = value;
+          this.onFulfilledCallbacks.map((cb) => {
+            this.value = cb(this.value);
+          });
+        }
+      });
+    };
+    //拒绝态回调
+    const reject = (reason) => {
+      // 使用macro-task机制(setTimeout),确保onRejected异步执行,且在 then 方法被调用的那一轮事件循环之后的新执行栈中执行。 (满足要求 -> 调用时机)
+      setTimeout(() => {
+        if (this.state === PENDING) {
+          // pending(等待态)迁移至 fulfilled(拒绝态),保证调用次数不超过一次。
+          this.state = REJECTED;
+          //拒因
+          this.reason = reason;
+          this.onRejectedCallbacks.map((cb) => {
+            this.reason = cb(this.reason);
+          });
+        }
+      });
+    };
+    try {
+      //执行promise
+      fn(resolve, reject);
+    } catch (e) {
+      reject(e);
+    }
+  }
+  //因回调使用setTimeout任务，所以then回调函数数组push，在执行回调函数之前
+  then(onFulfilled, onRejected) {
+    typeof onFulfilled === "function" &&
+      this.onFulfilledCallbacks.push(onFulfilled);
+    typeof onRejected === "function" &&
+      this.onRejectedCallbacks.push(onRejected);
+    // 返回this支持then 方法可以被同一个 promise 调用多次
+    return this;
+  }
+}
+```
+
+#### 测试	
+
+```js
+new MyPromise((resolve, reject) => {
+  Math.random() > 0.5 ? resolve("yes") : reject("no");
+}).then(
+  //resolve
+  (res) => {
+    console.log(res);
+  },
+  //reject
+  (err) => {
+    console.log(err);
+  }
+);
+```
+
+#### [符合Promise/A+要求](https://juejin.cn/post/6844903763178684430)
+
+[完整代码](https://github.com/webfansplz/article/tree/master/ajPromise)
+
+```js
+
+const PENDING = 'pending';
+const FULFILLED = 'fulfilled';
+const REJECTED = 'rejected';
+
+class AjPromise {
+  constructor(fn) {
+    this.state = PENDING;
+    this.value = null;
+    this.reason = null;
+    this.onFulfilledCallbacks = [];
+    this.onRejectedCallbacks = [];
+    const resolve = value => {
+      if (value instanceof Promise) {
+        return value.then(resolve, reject);
+      }
+      setTimeout(() => {
+        if (this.state === PENDING) {
+          this.state = FULFILLED;
+          this.value = value;
+          this.onFulfilledCallbacks.map(cb => {
+            cb = cb(this.value);
+          });
+        }
+      });
+    };
+    const reject = reason => {
+      setTimeout(() => {
+        if (this.state === PENDING) {
+          this.state = REJECTED;
+          this.reason = reason;
+          this.onRejectedCallbacks.map(cb => {
+            cb = cb(this.reason);
+          });
+        }
+      });
+    };
+    try {
+      fn(resolve, reject);
+    } catch (e) {
+      reject(e);
+    }
+  }
+  then(onFulfilled, onRejected) {
+    let newPromise;
+
+    onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : value => value;
+    onRejected =
+      typeof onRejected === 'function'
+        ? onRejected
+        : reason => {
+            throw reason;
+          };
+    if (this.state === FULFILLED) {
+      return (newPromise = new AjPromise((resolve, reject) => {
+        setTimeout(() => {
+          try {
+            let x = onFulfilled(this.value);
+            resolvePromise(newPromise, x, resolve, reject);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }));
+    }
+    if (this.state === REJECTED) {
+      return (newPromise = new AjPromise((resolve, reject) => {
+        setTimeout(() => {
+          try {
+            let x = onRejected(this.reason);
+            resolvePromise(newPromise, x, resolve, reject);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }));
+    }
+    if (this.state === PENDING) {
+      return (newPromise = new AjPromise((resolve, reject) => {
+        this.onFulfilledCallbacks.push(value => {
+          try {
+            let x = onFulfilled(value);
+            resolvePromise(newPromise, x, resolve, reject);
+          } catch (e) {
+            reject(e);
+          }
+        });
+        this.onRejectedCallbacks.push(reason => {
+          try {
+            let x = onRejected(reason);
+            resolvePromise(newPromise, x, resolve, reject);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }));
+    }
+  }
+}
+function resolvePromise(promise2, x, resolve, reject) {
+  if (x === promise2) {
+    reject(new TypeError('循环引用'));
+  }
+  if (x instanceof AjPromise) {
+    if (x.state === PENDING) {
+      x.then(
+        y => {
+          resolvePromise(promise2, y, resolve, reject);
+        },
+        reason => {
+          reject(reason);
+        }
+      );
+    } else {
+      x.then(resolve, reject);
+    }
+  } else if (x && (typeof x === 'function' || typeof x === 'object')) {
+    let called = false;
+    try {
+      let then = x.then;
+      if (typeof then === 'function') {
+        then.call(
+          x,
+          y => {
+            if (called) return;
+            called = true;
+            resolvePromise(promise2, y, resolve, reject);
+          },
+          r => {
+            if (called) return;
+            called = true;
+            reject(r);
+          }
+        );
+      } else {
+        resolve(x);
+      }
+    } catch (e) {
+      if (called) return;
+      called = true;
+      reject(e);
+    }
+  } else {
+    resolve(x);
+  }
+}
+
+AjPromise.deferred = function() {
+  let defer = {};
+  defer.promise = new AjPromise((resolve, reject) => {
+    defer.resolve = resolve;
+    defer.reject = reject;
+  });
+  return defer;
+};
+
+module.exports = AjPromise;
+```
+
