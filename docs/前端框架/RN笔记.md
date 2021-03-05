@@ -105,7 +105,7 @@ JS到原生桥接
 #### start
 - 若duration为0，且非原生驱动，直接调用更新回调，结束动画
 - 否则根据原生驱动接口，分别实现原生动画，或者使用`requestAnimationFrame`实现帧动画，帧动画可以调用this.onUpdate回调动画值
-```ts
+```js
 start(
     fromValue: number,
     onUpdate: (value: number) => void,
@@ -145,7 +145,7 @@ start(
 ```
 #### update
 在开始时间到duration结束时间内，回调动画值
-```ts
+```js
   onUpdate(): void {
     const now = Date.now();
     if (now >= this._startTime + this._duration) {
@@ -172,7 +172,7 @@ start(
 ```
 #### stop
 清除定时器，结束动画
-```ts
+```js
   stop(): void {
     super.stop();
     this.__active = false;
