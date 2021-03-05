@@ -360,7 +360,7 @@ metro 是一个针对 React Native的JavaScript模块打包器，他接收一个
 
 也就是说Metro把你写的几十上百个js文件和几百个node_modules的依赖，打包成了一个文件。
 
-## Metro的工作原理
+## Metro工作原理
 
 Metro 的打包过程有3个独立的阶段
 - Resolution
@@ -380,6 +380,117 @@ Metro 需要建立一个你的入口文件所需要的所有的模块的表，�
 一旦模块被转换完成，就会马上被serialized，通过serializer，把上一个阶段转换好的模块组合成一个或多个bundle，bundle 就是字面意思：把一堆模块组合成一个单独的JavaScript文件
 
 Metro这个库已经根据bundle时的各个阶段，拆分为resolver,transformer,serializer 模块了，每个模块负责相应的功能，因此你可以方便的替换为自己的模块。
+
+## Metro工作流程
+执行bundle命令，指定资源入口
+-> 定义系统模块（_d，require函数）（Resolution阶段） 
+-> 模块拆包 
+-> 去重过滤 
+-> 代码转化（Transformation阶段）
+-> 模块合并 （Serialization阶段）
+-> 输出bundle
+
+bundle中使用Number(int)数值型以_d的方式定义了代码模块ID，并使用_r的方式进行依赖行。如果存在模块间的改变或者修改，都有可能导致模块ID发生改变，导致旧的bundle文件不能使用。所以在拆分公共部分与业务部分的过程中，需要我们解决模块间依赖的问题。
+
+- _d：define (简单理解为模块)包括RN框架源码 js 部分、自定义js代码部分、图片资源信息，供 require 引入使用
+- _r：require 找到 __d 定义的代码块 并执行
+
+### 打包配置
+- entry-file	根JS文件的绝对路径
+
+- output	文件名存储输出的位置，例如 /tmp/dependencies.txt
+
+- platform	用于选择模块的平台扩展
+
+- transformer	指定要使用的自定义转换器
+
+- max-workers	指定工作池将为转换文件生成的最大工作器数。默认为计算机上可用的核心数。
+
+- dev	如果为false，则跳过所有dev-only代码路径
+
+- verbose	启用日志记录
+
+- config  打包配置脚本
+
+  例：
+```sh
+echo  "Starting to make jsbundle..."
+METRO_ROOT_DIR=$ROOT_DIR \
+node "$ROOT_DIR/node_modules/react-native/local-cli/cli.js" bundle \
+--dev false \
+--entry-file $ROOT_DIR/$INPUT_JSBUNDLE \
+--platform android \
+--bundle-output  $OUTPUT_JSBUNDLE \
+--sourcemap-output $OUTPUT_SOURCEMAP \
+--assets-dest $OUTPUT_DIR \
+--reset-cache true \
+--config "$ROOT_DIR/bundle-script.js"
+echo "finished."
+```
+
+配置打包config脚本`$ROOT_DIR/bundle-script.js`
+
+```js
+//根据打包阶段周期的钩子函数，实现打包时需要的脚本
+module.exports = {
+    serializer: {
+        createModuleIdFactory: createModuleIdFactory,
+        processModuleFilter: postProcessModulesFilter
+        /* serializer options */
+    },
+    projectRoot: rootDir
+};
+```
+
+### 拆包实践
+- 根据 **bundle中使用Number(int)数值型以_d的方式定义的代码模块ID** 打包common包，并结合模块本地路径生成模块配置表
+- 根据common包模块配置表，整合Diff包模块并打包
+
+#### common包
+Metro配置打包时执行`$ROOT_DIR/comm-bundle-script.js`脚本
+```js
+module.exports = {
+    serializer: {
+    		//实现钩子函数，根据模块ID和模块本地路径写入模块配置表
+        createModuleIdFactory:createModuleIdFactory
+    }
+};
+```
+模块配置表
+```json
+{
+  "id": 0,
+  "path": "node_modules/react/index.js"
+},
+{
+  "id": 1,
+  "path": "node_modules/react/cjs/react.production.min.js"
+},
+...
+```
+
+#### diff包
+Metro配置打包时执行`$ROOT_DIR/diff-bundle-script.js`脚本
+```js
+module.exports = {
+    serializer: {
+        //实现钩子函数，根据模块配置表过滤掉common包模块
+        processModuleFilter: postProcessModulesFilter
+    },
+    projectRoot: rootDir
+};
+```
+
+#### 整合
+初始化RN环境时就加载基础包，后续添加模块功能时只需要添加模块功能的diff包即可，在任更新的应用是，在需要热更新时，下载最新diff包去替换原先diff包，重新启动后应用最新diff包即可
+注：
+- common包需要向前兼容
+
+#### 为什么要使用路径代替moudleId进行引用
+metro-bundler 打包处理模块时，以递增的方式给每个模块一个 module ID，使得文件直接通过 require(module ID) 的方式引用其他模块；当然，一个项目的所有模块都在一个 bundle 中是没问题的，但进行 bundle 拆分后，当框架新增或删除一个依赖时，因为模块编号的方式使得在该状况下，后续的模块的 module ID 将会错位，这将造成升级框架 bundle 的难度，每次升级，其他业务 bundle 相应的需要回归测试，加大了开发测试成本。
+
+##### 注：
+因为使用路径表示，将会出现模块配置表在Mac和Win不一致的情况（因系统的相对路径表示的差异），将会导致Mac系统的common包配置表在Win系统下无效等情况（系统反之亦然）
 
 
 # 常见错误

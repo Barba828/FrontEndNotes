@@ -6,14 +6,17 @@
   [VUE 基础](前端框架/VUE基础.md)
   [React 笔记](前端框架/React笔记.md)
   [React Native 笔记](前端框架/RN笔记.md)
-  [ReactNavigation](前端框架/ReactNavigation.md)
+  [React Navigation](前端框架/ReactNavigation.md)
 
 - 前端知识
   [JavaScript 基础](前端知识/JavaScript基础.md)
   [JavaScript 笔记](前端知识/JavaScript笔记.md)
   [CSS 基础](前端知识/CSS基础.md)
   [CSS 笔记](前端知识/CSS笔记.md)
+  [Html 笔记](前端知识/Html笔记.md)
   [ES6 笔记](前端知识/ES6笔记.md)
+  [函数式编程](前端知识/函数式编程.md)
+  [Webpack 笔记](前端知识/Webpack.md)
 
 - Node
   [Node 基础](Node/Node基础.md)
