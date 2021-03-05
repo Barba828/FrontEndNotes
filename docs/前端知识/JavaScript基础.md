@@ -449,6 +449,10 @@ avg.apply(null, [2, 3, 4, 5]); // 3.5
 apply() 有一个姐妹函数，名叫 call，它也可以允许你设置 this，但它带有一个扩展的参数列表而不是一个数组。
 
 ```js
+avg.apply(null, 2, 3, 4, 5); // 3.5
+```
+例：
+```js
 function lastNameCaps() {
     return this.last.toUpperCase();
 }
@@ -459,4 +463,74 @@ s.lastNameCaps = lastNameCaps;
 s.lastNameCaps();
 ```
 
+#### 应用场景
+
+- 求数组中的最大和最小值
+```js
+var arr = [1,2,3,89,46]
+var max = Math.max.apply(null,arr)//89
+var min = Math.min.apply(null,arr)//1
+```
+- 将类数组转化为数组
+```js
+var trueArr = Array.prototype.slice.call(arrayLike)
+```
+- 数组追加
+```js
+var arr1 = [1,2,3];
+var arr2 = [4,5,6];
+var total = [].push.apply(arr1, arr2);//6
+// arr1 [1, 2, 3, 4, 5, 6]
+// arr2 [4,5,6]
+```
+- 判断变量类型
+```js
+function isArray(obj){
+    return Object.prototype.toString.call(obj) == '[object Array]';
+}
+isArray([]) // true
+isArray('dot') // false
+```
+- 利用call和apply做继承
+```js
+function Person(name,age){
+    // 这里的this都指向实例
+    this.name = name
+    this.age = age
+    this.sayAge = function(){
+        console.log(this.age)
+    }
+}
+function Female(){
+    Person.apply(this,arguments)//将父元素所有方法在这里执行一遍就继承了
+}
+var dot = new Female('Dot',2)
+```
+- 使用 log 代理 console.log
+```js
+function log(){
+  console.log.apply(console, arguments);
+}
+// 当然也有更方便的 var log = console.log()
+```
+
+#### call、apply和bind函数存在的区别:
+
+bind返回对应函数, 便于稍后调用； apply, call则是立即调用。
+
+除此外, 在 ES6 的箭头函数下, call 和 apply 将失效, 对于箭头函数来说:
+
+- 箭头函数体内的 this 对象, 就是定义时所在的对象, 而不是使用时所在的对象;所以不需要类似于var _this = this这种丑陋的写法
+- 箭头函数不可以当作构造函数，也就是说不可以使用 new 命令, 否则会抛出一个错误
+- 箭头函数不可以使用 arguments 对象,，该对象在函数体内不存在. 如果要用, 可以用 Rest 参数代替
+- 不可以使用 yield 命令, 因此箭头函数不能用作 Generator 函数，什么是Generator函数可自行查阅资料，推荐阅读阮一峰Generator 函数的含义与用法，Generator 函数的异步应用
+
+作者：_Dot912
+链接：https://www.jianshu.com/p/bc541afad6ee
+来源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
 ### [重新介绍Js](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/A_re-introduction_to_JavaScript)
+```
+
+```

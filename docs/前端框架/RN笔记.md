@@ -67,6 +67,121 @@ componentDidUpdate(prevProps, prevState, snapshot){
 ```
 ## 动画
 
+### Animated原理
+在RN中创建动画一般使用Animated组件，定义动画组件，定义动画属性，然后使用Animated提供的几种方法让动画生成。
+
+#### JS端驱动
+JS端：动画驱动在每一帧上执行requestanimationframe方法，更新value，驱动不断的使用新的value计算动画视图。
+JS端：计算差值，并且传递给绑定的view
+JS端：使用setNativeProps来更新View
+JS到原生桥接
+原生端：View更新
+所以可以看到，大多数工作都在JS端，如果JS端被阻塞，动画将会跳帧，并且每帧都需要JS传递到原生端去更新。
+
+#### 原生端驱动
+而使用RN提供给动画的原生驱动方式，则可以将上面所有步骤都移交至native端，当Animated组件产生动画节点图之后，在动画开始时，可以进行序列化，并传递到native直接执行，这样就省去了向JS端callback的过程，而原生端只关心在UI线程的每一帧，并直接更新。
+
+基于此，使用原生驱动的动画流程将变为： 
+1. 原生端：原生动画驱动使用CADisplayLink或者android.view.Choreographer去执行每一帧，计算并更新动画视图得到的新值。 
+2. 原生端：差值计算并被传递给绑定的原生view 
+3. 原生端：UIView或者android.view更新 
+如此，没有更多的JS线程，没有更多的桥接，也就意味着更快的动画效果。
+
+#### useNativeDriver使用原生驱动
+在Animated动画config设定中，添加useNativeDriver字段，并设为true
+##### 注：
+- 只能使用非布局的属性，比如transform或者opacity可以，而flexbox和位置属性不行
+- Animated.event只能工作于直接的事件而不是冒泡事件，比如PanResponder不能使用但是scrollView的onScroll方法可以
+
+比如：实现一个拖拽一个圆点，其余圆点逐渐跟随被拖拽圆点的动画；
+非原生驱动，其余圆点会跟着拖拽圆点走，但是掉帧；
+原生驱动，不会掉帧，但是需要在手势释放后，其余圆点动画才会跟随被拖拽圆点（原因：原生Brige & JS单线程）。
+
+### Animation源码初探
+
+以**Animated.timing()**为例
+`react-native/Libraries/Animated/src/animations/TimingAnimation.js`
+
+#### start
+- 若duration为0，且非原生驱动，直接调用更新回调，结束动画
+- 否则根据原生驱动接口，分别实现原生动画，或者使用`requestAnimationFrame`实现帧动画，帧动画可以调用this.onUpdate回调动画值
+```ts
+start(
+    fromValue: number,
+    onUpdate: (value: number) => void,
+    onEnd: ?EndCallback,
+    previousAnimation: ?Animation,
+    animatedValue: AnimatedValue,
+  ): void {
+    this.__active = true;
+    this._fromValue = fromValue;
+    this._onUpdate = onUpdate;
+    this.__onEnd = onEnd;
+
+    const start = () => {
+      // Animations that sometimes have 0 duration and sometimes do not
+      // still need to use the native driver when duration is 0 so as to
+      // not cause intermixed JS and native animations.
+      if (this._duration === 0 && !this._useNativeDriver) {
+        this._onUpdate(this._toValue);
+        this.__debouncedOnEnd({finished: true});
+      } else {
+        this._startTime = Date.now();
+        if (this._useNativeDriver) {
+          this.__startNativeAnimation(animatedValue);
+        } else {
+          this._animationFrame = requestAnimationFrame(
+            this.onUpdate.bind(this),
+          );
+        }
+      }
+    };
+    if (this._delay) {
+      this._timeout = setTimeout(start, this._delay);
+    } else {
+      start();
+    }
+  }
+```
+#### update
+在开始时间到duration结束时间内，回调动画值
+```ts
+  onUpdate(): void {
+    const now = Date.now();
+    if (now >= this._startTime + this._duration) {
+      if (this._duration === 0) {
+        this._onUpdate(this._toValue);
+      } else {
+        this._onUpdate(
+          this._fromValue + this._easing(1) * (this._toValue - this._fromValue),
+        );
+      }
+      this.__debouncedOnEnd({finished: true});
+      return;
+    }
+
+    this._onUpdate(
+      this._fromValue +
+        this._easing((now - this._startTime) / this._duration) *
+          (this._toValue - this._fromValue),
+    );
+    if (this.__active) {
+      this._animationFrame = requestAnimationFrame(this.onUpdate.bind(this));
+    }
+  }
+```
+#### stop
+清除定时器，结束动画
+```ts
+  stop(): void {
+    super.stop();
+    this.__active = false;
+    clearTimeout(this._timeout);
+    global.cancelAnimationFrame(this._animationFrame);
+    this.__debouncedOnEnd({finished: false});
+  }
+```
+
 ### 一维动画 Animated.Value
 声明一维动画标量值
 ```js
@@ -238,6 +353,34 @@ componentWillUnmount(){
   }
 
 ```
+
+# Metro打包
+
+metro 是一个针对 React Native的JavaScript模块打包器，他接收一个entry file (入口文件) 和一些配置作为参数，返回给你一个单独的JavaScript文件，这个文件包含了你写的所有的JavaScript 代码和所有的依赖。
+
+也就是说Metro把你写的几十上百个js文件和几百个node_modules的依赖，打包成了一个文件。
+
+## Metro的工作原理
+
+Metro 的打包过程有3个独立的阶段
+- Resolution
+- Transformation
+- Serialization
+
+### Resolution 阶段
+
+Metro 需要建立一个你的入口文件所需要的所有的模块的表，为了找到一个文件依赖了哪些文件，Metro 使用了一个resolver。在实际中，Resolution阶段是和transformation阶段并行进行的。
+
+### Transformation阶段
+
+所有的模块都要经历一个 transformer， transformer 负责把一个模块转换成RN能理解的格式；
+
+### Serialization阶段
+
+一旦模块被转换完成，就会马上被serialized，通过serializer，把上一个阶段转换好的模块组合成一个或多个bundle，bundle 就是字面意思：把一堆模块组合成一个单独的JavaScript文件
+
+Metro这个库已经根据bundle时的各个阶段，拆分为resolver,transformer,serializer 模块了，每个模块负责相应的功能，因此你可以方便的替换为自己的模块。
+
 
 # 常见错误
 
