@@ -26,7 +26,7 @@ WebSocket 协议在2008年诞生，2011年成为国际标准。所有浏览器�
 
 （1）建立在 TCP 协议之上，服务器端的实现比较容易。
 
-（2）与 HTTP 协议有着良好的兼容性。默认端口也是80和443，并且握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器。
+（2）与 HTTP 协议有着良好的兼容性。默认端口也是80和443，并且握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器，第一次HTTP Request建立了连接之后，后续的数据交换都不用再重新发送HTTP Request，节省了带宽资源。
 
 （3）数据格式比较轻量，性能开销小，通信高效。
 
@@ -385,7 +385,90 @@ ws.onmessage = function(event) {
 };
 ```
 
-## 六、参考
+## 六、原理
+Websocket是应用层第七层上的一个应用层协议，它必须依赖 HTTP 协议进行一次握手 ，握手成功后，数据就直接从 TCP 通道传输，与 HTTP 无关了。即：websocket分为握手和数据传输阶段，即进行了HTTP握手 + 双工的TCP连接。
+
+下面我们分别来看一下这两个阶段的具体实现原理：
+
+### 握手阶段
+
+客户端发送消息：
+```
+GET /chat HTTP/1.1
+Host: server.example.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+Origin: http://example.com
+Sec-WebSocket-Version: 13
+```
+服务端返回消息：
+
+```
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+```
+这里值得注意的是Sec-WebSocket-Accept的计算方法：
+base64(hsa1(sec-websocket-key + 258EAFA5-E914-47DA-95CA-C5AB0DC85B11))
+如果这个Sec-WebSocket-Accept计算错误浏览器会提示：Sec-WebSocket-Accept dismatch
+如果返回成功，Websocket就会回调onopen事件
+
+### 传输阶段
+
+Websocket的数据传输是frame形式传输的，比如会将一条消息分为几个frame，按照先后顺序传输出去。这样做会有几个好处：
+
+- a、大数据的传输可以分片传输，不用考虑到数据大小导致的长度标志位不足够的情况。
+- b、和http的chunk一样，可以边生成数据边传递消息，即提高传输效率。
+
+传送的帧类型分为两类：数据帧(data frame)和控制帧(Control frame)。数据帧可以携带文本数据或者二进制数据；控制帧包含关闭帧(Close frame)和Ping/Pong帧。
+
+websocket传输使用的协议如下图：
+![websocket传输使用的协议](https://upload-images.jianshu.io/upload_images/11362584-470c3ab12b0b2bd7.png)
+参数说明如下：
+
+- FIN：1位，用来表明这是一个消息的最后的消息片断，当然第一个消息片断也可能是最后的一个消息片断；
+
+- RSV1, RSV2, RSV3: 分别都是1位，如果双方之间没有约定自定义协议，那么这几位的值都必须为0,否则必须断掉WebSocket连接；
+
+- Opcode: 4位操作码，定义有效负载数据，如果收到了一个未知的操作码，连接也必须断掉，以下是定义的操作码：
+
+```js
+/*
+*  %x0 表示连续消息帧
+*  %x1 表示文本消息帧
+*  %x2 表未二进制消息帧
+*  %x3-7 为将来的非控制消息片断保留的操作码
+*  %x8 表示连接关闭帧
+*  %x9 表示心跳检查的ping帧
+*  %xA 表示心跳检查的pong帧
+*  %xB-F 为将来的控制消息片断的保留操作码
+*/
+```
+
+- Mask: 1位，定义传输的数据是否有加掩码,如果设置为1,掩码键必须放在masking-key区域，客户端发送给服务端的所有消息，此位的值都是1；
+
+- Payload length: 传输数据的长度，以字节的形式表示：7位、7+16位、或者7+64位。如果这个值以字节表示是0-125这个范围，那这个值就表示传输数据的长度；如果这个值是126，则随后的两个字节表示的是一个16进制无符号数，用来表示传输数据的长度；如果这个值是127,则随后的是8个字节表示的一个64位无符合数，这个数用来表示传输数据的长度。多字节长度的数量是以网络字节的顺序表示。负载数据的长度为扩展数据及应用数据之和，扩展数据的长度可能为0,因而此时负载数据的长度就为应用数据的长度。
+
+- Masking-key: 0或4个字节，客户端发送给服务端的数据，都是通过内嵌的一个32位值作为掩码的；掩码键只有在掩码位设置为1的时候存在。
+
+- Payload data: (x+y)位，负载数据为扩展数据及应用数据长度之和。
+
+- Extension data: x位，如果客户端与服务端之间没有特殊约定，那么扩展数据的长度始终为0，任何的扩展都必须指定扩展数据的长度，或者长度的计算方式，以及在握手时如何确定正确的握手方式。如果存在扩展数据，则扩展数据就会包括在负载数据的长度之内。
+
+- Application data: y位，任意的应用数据，放在扩展数据之后，应用数据的长度=负载数据的长度-扩展数据的长度。
+
+### 其余方式
+ WEBSOCKET之前的解决方法大概这么几种： 
+ - 轮询：客户端设置一个时间间隔，时间到以后，向服务器发送request询问有无新数据，服务器立即返回response，如果有更新则携带更新的数据。
+ - 长连接(long poll): 和轮询相似，但是为阻塞模式的轮询，客户端请求新的数据request, 服务器会阻塞请求，直到有新数据后才返回response给客户端；然后客户端再重复此过程。
+
+这两种方式的特点，不断的建立HTTP连接，然后发送请求request，之后服务器等待处理。服务端体现的是一种被动性，同时这种处理方式，非常耗费网络带宽和服务器资源。
+
+服务器向客户端推送更新时，因为被动性，对低延迟的应用体验不好；因为request/response的交互方式，对网络带宽和服务器带来了额外的负担（例如多次请求的HTTP头部， TCP连接复用会导致的Head-of-Line Blocking线头阻塞[2]等）。如果在单一的TCP连接中，使用双向通信（全双工通信）就能很好的解决此问题。这就是WebSocket技术的缘由。
+
+## 参考
 
 [阮一峰博客](http://www.ruanyifeng.com/blog/2017/05/websocket.html)
 [MDN Docs](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
