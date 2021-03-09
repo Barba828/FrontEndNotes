@@ -54,3 +54,117 @@ target-densitydpi = [dpi_value | device-dpi | high-dpi | medium-dpi | low-dpi]
 <meta name=”apple-mobile-web-app-status-bar-style” content=”black-translucent” />
 ```
 default:默认； black:纯黑； black-translucent：半透明灰色
+
+## 加载Dom
+
+DOM完整的解析过程：
+
+1. 解析HTML结构
+2. 加载外部脚本和样式表文件
+3. 解析并执行脚本代码。//js之类的
+4. DOM树构建完成(`DOMContentLoaded`)
+5. 加载图片等外部资源文件
+6. 页面加载完毕(`window.onload`)
+
+### window.onload 和 DOMContentLoaded 的区别
+1、当 onload事件触发时，页面上所有的DOM，样式表，脚本，图片，flash都已经加载完成了。
+2、当 DOMContentLoaded 事件触发时，仅当DOM加载完成，不包括样式表，图片，flash。
+
+开发中我们经常需要给一些元素的事件绑定处理函数。但问题是，如果那个元素还没有加载到页面上，但是绑定事件已经执行完了，是没有效果的。这两个事件大致就是用来避免这样一种情况，将绑定的函数放在这两个事件的回调中，保证能在页面的某些元素加载完毕之后再绑定事件的函数。
+当然DOMContentLoaded机制更加合理，因为我们可以容忍图片，flash延迟加载，却不可以容忍看见内容后页面不可交互。
+
+## 对象
+![对象](./assets/browser-object.jpg)
+### window
+1 .窗口自身
+2 .window.self 引用本窗口
+3 .window.name 窗口命名
+4 .window.defaultStatus 设定窗口状态栏信息
+5 .window.location URL地址，配备布置这个属性可以打开新的页面
+6 .window对象是相对于web浏览器而言的，他并不是语言的定义的内置对象，window对象在程序执行前就已经存在了。window对象是宿主在浏览器的情况下才会产生，而global对象是在任何环境中都存在的
+7 .window对象具体也就是指浏览器打开的那个窗口
+8 .如果html文档包含框架，浏览器会为html文档创建一个window对象，并为每一个框架创建一个额外的对象
+
+#### 方法
+1 .window.alert()
+2 .window.confirm()
+3 .window.prompt()
+4 .window.setInterval()
+5 .window.clearInterval()
+6 .window.setTimeout()
+7 .window.open()
+8 .window.close()
+
+#### 成员对象
+1 .window.event //为什么是undefined
+2 .window.document
+3 .window.history
+4 .window.screen
+5 .window.navigator
+6 .window.external
+
+#### window.screen
+1 .s.width
+2 .s.height
+3 .s.colorDepth 屏幕色深
+4 .s.availWidth 可用宽度
+5 .s.availHeight 可用高度
+
+#### window.external
+1 .window.external.AddFavorite("地址"，"标题")
+2 .把网站新增到保藏夹
+
+#### window.navigator
+1 .n.appCodeName //浏览器代码名
+2 .n.appName 
+3 .n.appMinorVersion 浏览器补丁版本
+4 .n.cpuClass cpu类型
+5 .n.platform 操作系统类型
+6 .n.plugins 浏览器插件
+7 .n.opsProfile 
+8 .n.userProfile
+9 .n.systemlangaguage 客户体系语言
+10 .n.userLanguage 用户语言
+11 .n.appVersion 浏览器版本
+12 .n.userAgent
+13 .n.onLine 用户是否在线
+14 .n.cookieEnabled 浏览器是否支持cookie
+15 .n.mimeTypes
+
+### ducument
+
+1 .document对象是window对象的一个属性(`window.document`)，是显示窗口的一个文档。
+2 .document可以理解为文档，就是网页，window是窗口，就是浏览器包含的，在没有框架的情况下是等同的
+3 .代表整个HTMl文档，可用来访问页面的所有元素
+
+#### 属性
+1 .document.title
+2 .document.bgColor
+3 .document.fgColor
+4 .document.linkColor
+5 .document.alinkColor
+6 .document.vlinkColor
+7 .document.URL 设置url属性从而在同一窗口打开另一网页
+8 .document.fileCreateDate 文件建立日期
+9 .document.fileModifiedDate 文件修改日期
+10 .document.fileSize 
+11 .document.cookie
+12 .document.charset
+13 .document.body
+14 .document.location
+
+#### 方法
+1 .document.write()动态向页面写内容
+2 .document.createelement
+3 .document.getElementById
+4 .document.getElementByName
+5 .document.appendChild
+
+### global
+1 .是一个特殊的对象，称为全局对象，他极其所有属性都可以在程序的任何地方访问，即全局变量
+2 .在顶层js代码中，可以使用this关键字引用全局对象。但通常不必用这种方式引用全局对象，因为全局对象是作用域链的头，
+3 .不属于任何其他对象的属性和方法，最终都是他的属性和方法
+4 .isNaN,parseInt()一些常见的特殊值，NaN,undefined等都是他的属性，以及一些构造函数Object,Arrray等也是他的方法
+5 .首先这个是不存在的对象，无法访问。
+6 .所有在全局作用域中定义的属性和函数，都是global对象的属性和方法
+7 .全局对象时预定义的对象，作为js全局函数和全局属性的占位符，通过访问全局对象，可以找到其他所有预定义的对象，函数和属性。全局对象不是任何对象的属性，所以他没有名称
