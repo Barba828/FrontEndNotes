@@ -1,70 +1,189 @@
-## 生命周期
+## 概念
 
-### Constructor
-1. 用于初始化操作，一般很少使用
-2. 唯一一个直接修改state的地方，其他地方通过调用this.setState()方法。
+RN 这套框架让 JS开发者可以大部分使用JS代码就可以构建一个跨平台APP。 Facebook官方说法是learn once, run everywhere， 即在Android 、 IOS、 Browser各个平台，程序画UI和写逻辑的方式都大致相同。因为JS 可以动态加载，从而理论上可以做到write once, run everywhere， 当然要做额外的适配处理。如图：
 
-### componentDidMount
-1. UI渲染完成后调用
-2. 只执行一次
-3. 典型场景：获取外部资源
+![框架](./assets/RN.jpg)
 
-### componentDidUpdate
-1. 每次UI更新被调用
-2. 典型场景：页面通过props重新获取数据
+RN需要一个JS的运行环境， 在IOS上直接使用内置的javascriptcore， 在Android 则使用webkit.org官方开源的jsc.so。 此外还集成了其他开源组件，如fresco图片组件，okhttp网络组件等。
 
-### componentWillUnmount
-1. 组件被移除时调用
-2. 典型场景：资源释放
+RN 会把应用的JS代码（包括依赖的framework）编译成一个js文件（一般命名为index.android.bundle), RN的整体框架目标就是为了解释运行这个js 脚本文件：
 
-### getSnapshotBeforeUpdate
-1. 在render之前调用，state已更新
-2. 典型场景：获取render之前的dom状态
+- 如果是js 扩展的API， 则直接通过bridge调用native方法; 
+- 如果是UI界面， 则映射到virtual DOM这个虚拟的JS数据结构中，通过bridge 传递到native ， 然后根据数据属性设置各个对应的真实native的View。
 
-### getDerivedStateFromProps
-1. 当state需要从props初始化时，使用
-2. 尽量不使用，维护俩者状态需要消耗额外资源，增加复杂度
-3. 每次render都会调用
-4. 典型场景表单获取默认值
+bridge是一种JS 和 JAVA代码通信的机制， 用bridge函数传入对方module 和 method即可得到异步回调的结果。
 
-### shouldComponentUpdate
-1. 觉得Vistual Dom是否重绘
-2. 一般可以由PuerComponent自动实现
-3. 典型场景：性能优化
+对于JS开发者来说， 画UI只需要画到virtual DOM 中，不需要特别关心具体的平台, 还是原来的单线程开发，还是原来HTML 组装UI（JSX），还是原来的样式模型（部分兼容 )。RN的界面处理除了实现View 增删改查的接口之外，还自定义一套样式表达CSSLayout，这套CSSLayout也是跨平台实现。 RN 拥有画UI的跨平台能力，主要是加入Virtual DOM编程模型，该方法一方面可以照顾到JS开发者在html DOM的部分传承， 让JS 开发者可以用类似DOM编程模型就可以开发原生APP ， 另一方面则可以让Virtual DOM适配实现到各个平台，实现跨平台的能力，并且为未来增加更多的想象空间， 比如react-cavas, react-openGL。而实际上react-native也是从react-js演变而来。
 
-### UNSAFE
+对于 Android 开发者来说， RN是一个普通的安卓程序加上一堆事件响应， 事件来源主要是JS的命令。主要有二个线程，UI main thread, JS thread。 UI thread创建一个APP的事件循环后，就挂在looper等待事件 , 事件驱动各自的对象执行命令。 JS thread 运行的脚本相当于底层数据采集器， 不断上传数据，转化成UI 事件， 通过bridge转发到UI thread, 从而改变真实的View。 后面再深一层发现， UI main thread 跟 JS thread更像是CS 模型，JS thread更像服务端， UI main thread是客户端， UI main thread 不断询问JS thread并且请求数据，如果数据有变，则更新UI界面。
 
-#### componentWillReceiveProps
+注：
 
-```js
-UNSAFE_componentWillReceiveProps(nextProps) {
- //通过this.props来获取旧的外部状态,初始 props 不会被调用
- //通过对比新旧状态，来判断是否执行如this.setState及其他方法(可能会引起重复渲染)
-}
-```
+Weex原理与RN相似，主要区别是前端的编写由React语法转为VUE语法
 
-##### getDerivedStateFromProps
+## JSBridge
 
-```js
-// 更新状态
-static getDerivedStateFromProps(nextProps, prevState) {
-    //静态方法内禁止访问this
-    if (nextProps.email !== prevState.value) {
-        //通过对比nextProps和prevState，返回一个用于更新状态的state对象，可理解返回this.setState({})
-        return {
-            value: nextProps.email,
-        };
+双向通信的通道:
+JS 向 Native 发送消息: 调用相关功能、通知 Native 当前 JS 的相关状态等。
+Native 向 JS 发送消息: 回溯调用结果、消息推送、通知 JS 当前 Native 的状态等。
+
+![JSBridge](./assets/JSBridge.jpg)
+
+### 实现原理
+
+JavaScript 是运行在一个单独的 JS Context 中（例如，WebView 的 Webkit 引擎、JSCore）。由于这些 Context 与原生运行环境的天然隔离，我们可以将这种情况与 RPC（Remote Procedure Call，远程过程调用）通信进行类比，将 Native 与 JavaScript 的每次互相调用看做一次 RPC 调用。
+
+在 JSBridge 的设计中，可以把前端看做 RPC 的客户端，把 Native 端看做 RPC 的服务器端，从而 JSBridge 要实现的主要逻辑就出现了：通信调用（Native 与 JS 通信） 和句柄解析调用。
+
+### 1. JavaScript 调用 Native 的方式
+注入 API 方式的主要原理是，通过 WebView 提供的接口，向 JavaScript 的 Context（window）中注入对象或者方法，让 JavaScript 调用时，直接执行相应的 Native 代码逻辑，达到 JavaScript 调用 Native 的目的。
+
+主要有两种：注入API 和 拦截URL SCHEME。
+
+#### 1.1 注入API
+##### Web实现
+1. Native端实现原生方法
+```java
+class NativeBridge{
+    private Context context;
+
+    NativeBridge(Context context){
+        this.context = context;
     }
-    return null;
-}
 
-// 执行渲染
-componentDidUpdate(prevProps, prevState, snapshot){
-    if(this.props.email){
-        // 做一些需要this.props的事
+    @JavascriptInterface
+    public void showNativeDialog(String text){
+        Toast.makeText(context,text,Toast.LENGTH_LONG).show();
     }
 }
 ```
+
+2. Native端通过WebView的接口注入JS对象
+```java
+webView.addJavascriptInterface(new NativeBridge(mContext),"NativeBridge");
+```
+
+3. Web中获取JS对象，调用Native代码：
+```js
+window.NativeBridge.showNativeDialog(text);
+```
+
+##### RN实现
+1. Native端实现原生方法
+```java
+public class ToastModule extends ReactContextBaseJavaModule {
+  private static ReactApplicationContext reactContext;
+  
+  // 定义模块名称
+  @Override
+  public String getName() {
+    return "ToastExample";
+  }
+  
+  // 定义方法
+  @ReactMethod
+  public void show(String message, int duration) {
+    Toast.makeText(getReactApplicationContext(), message, duration).show();
+  }
+}
+```
+
+2. Native端在ReactPackage中注入JS对象
+```java
+  @Override
+  public List<NativeModule> createNativeModules(
+                              ReactApplicationContext reactContext) {
+    List<NativeModule> modules = new ArrayList<>();
+
+    modules.add(new ToastModule(reactContext));
+
+    return modules;
+  }
+```
+
+3. RN端获取JS对象，调用Native代码
+```js
+import { NativeModules } from "react-native";
+
+NativeModules.ToastExample.show(text,duration);
+```
+
+#### 1.2 拦截URL
+
+URL SCHEME 是一种类似于url的链接，是为了方便app直接互相调用设计的，形式和普通的 url 近似，主要区别是 protocol 和 host 一般是自定义的。
+```js
+<protocol>://<domain>/<path>?<query>
+```
+拦截 URL SCHEME 的主要流程是：Web 端通过某种方式发送 URL Scheme 请求，之后 Native 拦截到请求并根据 URL SCHEME（包括所带的参数）进行相关操作。
+
+URL拦截，通过WebViewClient的shouldOverrideUrlLoading方法，拦截js代码执行，例如： 
+```js
+document.location='js://webview?name=root&pwd=1234'
+```
+根据scheme（协议格式）和authority（协议名），获取name和pwd。Js可以触发WebviewClient的shouldOverrideUrlLoading方法有：1，document.loacation;  2,href;  3,window.open;4,iframe.src。
+
+#### 1.3 拦截方法
+
+JS中执行对话框alert（警告框），prompt（提示框），confirm（确认框），console.log方法，可以触发WebChromClinet的onJsAlert，onJsPrompt，onJsConfirm，onConsoleMessage的回调。alert会弹出对话框， confirm确定对 话框，console是用来debug javascript代码的，一般prompt使用的频率比较小，使用prompt来进行js调用java
+
+1. JS端URL请求
+```js
+window.alert('jsbridge://showToast?text=' + text);
+```
+
+2. Native端实现监听
+```java
+    webView.setWebChromeClient(new WebChromeClient() {
+        @Override
+        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+            if (!message.startsWith("jsbridge://")) {
+                return super.onJsAlert(view, url, message, result);
+            }
+
+            UrlSchema urlschema = new UrlSchema(message);
+            if ("showToast".equals(urlchema.getMethodName())) {
+                String text = urlschema.getParams("text");
+                Toast.makeText(mContext, text, Toast.LENGTH_LONG).show();
+            }
+
+            result.confirm();
+            return true;
+        }
+    }
+```
+
+
+
+### 2. Native 调用 JavaScript 的方式
+
+Native 调用 JavaScript 较为简单，直接执行拼接好的 JavaScript 代码即可，相当于在html页面中加载了一个本地js文件
+
+#### Android
+
+```java
+// 1.loadUrl
+webview.loadUrl("javascript:alert('hello world')")
+  
+// 2.evaluateJavascript
+// 区别是：1，它可以获取调用的js函数的返回值；2，在android4.4以及上才可以使用
+webview.evaluateJavascript(“javascript:alert(‘hello world’)”, new ValueCallback<String>(){
+  @Override
+  public void onReceiveValue(String value){
+    System.out.println("js函数返回值：" + value);
+  }
+})
+```
+
+
+
+#### IOS
+
+```objc
+result = [uiWebview stringByEvaluatingJavaScriptFromString:"javascript:alert('hello world')"];
+```
+
+
+
 ## 动画
 
 ### Animated原理

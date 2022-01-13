@@ -1,5 +1,10 @@
 # ES6
 
+## 作用域
+
+- 使用`let`声明的变量可以重新赋值,但是不能在同一作用域内重新声明
+- 使用`const`声明的变量必须赋值初始化,但是不能在同一作用域类重新声明也无法重新赋值
+
 ## 箭头函数
 
 ```js
@@ -30,7 +35,7 @@ arr.sort=(n1,n2)=>{
 }
 ```
 
-## 函数的参数
+## 参数扩展
 
 1. 参数的扩展/展开
 
@@ -103,6 +108,7 @@ let result=arr.filter(item=>item%3==0)
 alert(result)//取数组中3的模
 ```
 
+
 ## 字符串
 
 1. ES6新方法startWith,endsWith
@@ -136,22 +142,33 @@ let str=`<div>
 
 ```js
 class User{    
+  	//constructor方法虽然在类中,但不是原型上的方法,只是用来生成实例的
     constructor(name,pass){      
         this.name=name;      
         this.pass=pass;    
     }    
+    //原型上的方法, 由所有实例对象共享
     showName() {      
     	alert(this.name)    
-    }    
-    showPass(){      
-    	alert(this.pass)    
-    } 
+    }
 }
+```
+ES5实现
+```js
+function User(name,pass) {
+      this.name=name;      
+      this.pass=pass; 
+}
+// 由所有实例 "继承" 的方法
+User.prototype.showName = function () {
+    	alert(this.name) 
+};
 ```
 3. 继承
 ```js
 class VipUser extends User{
-    constructor(name,pass,level){      
+    constructor(name,pass,level){   
+    		//在使用 this 之前，必须先调用超级类
         super(name,pass);
         this.level = level;
     }
@@ -160,3 +177,163 @@ class VipUser extends User{
     }
 }
 ```
+ES5实现，组合式继承
+```js
+function VipUser(name,pass,level) {
+    User.call(this, name,pass);  // 借用构造函数, 第一次调用父类构造函数
+    this.level = level;
+}
+
+VipUser.prototype = new User();  // 原型链继承, 第二次调用父类构造函数
+VipUser.prototype.constructor = VipUser;  // 将实例的原型上的构造函数指定为当前子类的构造函数
+VipUser.prototype.showLevel = function () {
+        alert(this.level)
+};
+```
+
+## Promise
+
+## 元编程
+
+### 代理 Proxy
+
+
+
+### 反射 Reflex
+
+
+
+## 集合
+
+
+### Set
+
+Set是es6新提供的数据结构，类似于数组。特点：**Set内成员值是惟一的，没有重复的值**。
+
+```js
+var set = new Set([1, 2, 3, 4, 4]);//构造函数默认数组类型，可以去重
+[...set] // [1, 2, 3, 4]
+
+var set=new Set();
+set.add({});
+set.add({});
+[...set]//[{},{}] 对象和对象时不相等的 {}==={} 为false
+```
+
+#### 属性
+
+```js
+Set.prototype.constructor：构造函数，默认就是Set函数。
+Set.prototype.size：返回Set实例的成员总数。
+```
+
+#### 方法
+
+```js
+add(value)：添加某个值，返回Set结构本身。
+delete(value)：删除某个值，返回一个布尔值，表示删除是否成功。
+has(value)：返回一个布尔值，表示该值是否为Set的成员。
+clear()：清除所有成员，没有返回值。
+```
+
+#### 遍历
+
+1. keys方法、values方法、entries方法返回的都是遍历器对象。Set 接口没有键名，只有键值。因此Keys 和Values 返回值相等。
+
+```js
+var obj=new Set([1,2,3,4,5,3,6]);
+[...obj.keys()]; //[1,2,3,4,5,3,6]
+[...obj.values()];//[1,2,3,4,5,3,6]
+[...obj.entries()];//[[1,1],[2,2],[3,3],[4,4],[5,5],[6,6]]
+```
+
+2. forEach()
+
+```js
+let set = new Set([1, 2, 3]);
+set.forEach((value, key) => console.log(value * 2) )
+```
+
+3. 其他遍历 for of 扩展运算符也可以使用
+
+```js
+var obj=new Set([1,2,3,4,5,3,6]);
+[...obj]
+//返回是数组：[1,2,3,4,5,6]
+```
+
+### WeakSet
+
+1. WeakSet 成员**只能是对象**，并且存储的对象都是**弱引用**。
+2. WeakSet没有size 属性，因此**不可遍历**。
+3. 有三个方法：add，delete，has。
+
+**弱引用**
+
+>垃圾回收机制不考虑对该对象的引用。
+
+```js
+const ws = new WeakSet();
+var a = { p1: "1", p2: "2" };
+ws.add(a);
+console.log(ws.has(a)); //true
+a = null;
+console.log(ws.has(a)); //false;
+```
+
+主要应用场景：存储DOM节点。成员是弱引用，不会担心节点被删除造成内存泄露。也可以避免全部使用强引用DOM对象，造成无法释放内存，造成内存溢出。
+
+### Map
+
+ES6中提供了Map的数据结构,类似于对象，是键值对的集合， 与对象不同的是，对象的键值只能是字符串，而Map 可以将任意类型都可以作为键值。
+
+```js
+var map = new Map([
+  ["a", "1"],
+  ["b", "2"],
+]);
+
+map.size; // 2
+map.has("a"); // true
+map.get("a"); // "1"
+```
+
+#### 属性
+
+```js
+Map.prototype.constructor：构造函数，默认就是Set函数。
+Map.prototype.size：返回Set实例的成员总数。
+```
+
+#### 方法
+
+```js
+set(key,value)：添加某个值，返回Map结构本身
+get(key): 获取某个值
+has(key)：返回一个布尔值，表示该值是否为Set的成员
+delete(key)：删除某个值，返回一个布尔值，表示删除是否成功
+clear()：清除所有成员，没有返回值
+```
+#### 遍历
+同Set
+
+### WeakMap
+只接受**对象作为键名，键名为弱引用，不能遍历（没有size属性）**
+操作方法：get()、set()、has()、delete()
+应用场景：
+同WeakSet 一样，适合用来操作DOM。
+
+```
+let elem= document.getElementById('logo');
+let myWeakmap = new WeakMap();
+
+myWeakmap.set(myElement, {timesClicked: 0});
+
+myElement.addEventListener('click', function() {
+  let logoData = myWeakmap.get(myElement);
+  logoData.timesClicked++;
+}, false);
+```
+
+myElement是一个 DOM 节点，每当发生click事件，就更新一下状态。我们将这个状态作为键值放在 WeakMap 里，对应的键名就是myElement。一旦这个 DOM 节点删除，该状态就会自动消失，不存在内存泄漏风险。
+

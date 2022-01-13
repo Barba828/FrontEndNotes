@@ -180,6 +180,72 @@ class LoggingButton extends React.Component {
 
 VUE 中通过 v-model 实现双向绑定，好处是减少了修改 state 的模版代码，缺点是使组件中的数据源变得不可控，父组件和自组件都可以修改该数据，数据流非自上而下的瀑布流形式，较难排查 bug。
 
+### 生命周期
+
+#### Constructor
+1. 用于初始化操作，一般很少使用
+2. 唯一一个直接修改state的地方，其他地方通过调用this.setState()方法。
+
+#### componentDidMount
+1. UI渲染完成后调用
+2. 只执行一次
+3. 典型场景：获取外部资源
+
+#### componentDidUpdate
+1. 每次UI更新被调用
+2. 典型场景：页面通过props重新获取数据
+
+#### componentWillUnmount
+1. 组件被移除时调用
+2. 典型场景：资源释放
+
+#### getSnapshotBeforeUpdate
+1. 在render之前调用，state已更新
+2. 典型场景：获取render之前的dom状态
+
+#### getDerivedStateFromProps
+1. 当state需要从props初始化时，使用
+2. 尽量不使用，维护俩者状态需要消耗额外资源，增加复杂度
+3. 每次render都会调用
+4. 典型场景表单获取默认值
+
+#### shouldComponentUpdate
+1. 觉得Vistual Dom是否重绘
+2. 一般可以由PuerComponent自动实现
+3. 典型场景：性能优化
+
+#### UNSAFE_componentWillReceiveProps
+
+```js
+UNSAFE_componentWillReceiveProps(nextProps) {
+ //通过this.props来获取旧的外部状态,初始 props 不会被调用
+ //通过对比新旧状态，来判断是否执行如this.setState及其他方法(可能会引起重复渲染)
+}
+```
+
+##### 替换方案
+
+```js
+// 更新状态
+static getDerivedStateFromProps(nextProps, prevState) {
+    //静态方法内禁止访问this
+    if (nextProps.email !== prevState.value) {
+        //通过对比nextProps和prevState，返回一个用于更新状态的state对象，可理解返回this.setState({})
+        return {
+            value: nextProps.email,
+        };
+    }
+    return null;
+}
+
+// 执行渲染
+componentDidUpdate(prevProps, prevState, snapshot){
+    if(this.props.email){
+        // 做一些需要this.props的事
+    }
+}
+```
+
 ### 注
 
 - 构造函数是唯一可以给 this.state 赋值的地方
@@ -621,6 +687,8 @@ react diff 算法制定了三条策略，将算法复杂度从 O(n3)降低到 O(
 1. diff 对树进行分层比较，只对比两棵树同级别的节点。跨层级移动节点，将会导致节点删除，重新插入，无法复用。
 2. diff 对组件进行类比较，类相同的递归 diff 子节点，不同的直接销毁重建。diff 对同一层级的子节点进行处理时，会根据 key 进行简要的复用。两棵树中存在相同 key 的节点时，只会移动节点。
 
+[参考](https://www.jianshu.com/p/3ba0822018cf)
+
 另外，在对比同一层级的子节点时:
 diff 算法会以新树的第一个子节点作为起点遍历新树，寻找旧树中与之相同的节点。
 如果节点存在，则移动位置。如果不存在，则新建一个节点。
@@ -688,6 +756,183 @@ class Father extends Component {
 - 不使用跨层级移动节点的操作（同时尽量少使用 ref 操作）。
 - 对于条件渲染多个节点时，尽量采用隐藏等方式切换节点，而不是替换节点。
 - 尽量避免将后面的子节点移动到前面的操作，当节点数量较多时，会产生一定的性能问题。
+
+## PropTypes
+
+随着你的应用程序不断增长，你可以通过类型检查捕获大量错误。对于某些应用程序来说，你可以使用 Flow 或 TypeScript 等 JavaScript 扩展来对整个应用程序做类型检查。但即使你不使用这些扩展，React 也内置了一些类型检查的功能。要在组件的 props 上进行类型检查，你只需配置特定的 propTypes 属性：
+```js
+import PropTypes from 'prop-types';
+
+class Greeting extends React.Component {
+  render() {
+    return (
+      <h1>Hello, {this.props.name}</h1>
+    );
+  }
+}
+
+Greeting.propTypes = {
+  name: PropTypes.string
+};
+```
+
+
+在此示例中，我们使用的是 class 组件，但是同样的功能也可用于函数组件，或者是由 React.memo/React.forwardRef 创建的组件。
+PropTypes 提供一系列验证器，可用于确保组件接收到的数据类型是有效的。在本例中, 我们使用了 PropTypes.string。当传入的 prop 值类型不正确时，JavaScript 控制台将会显示警告。出于性能方面的考虑，propTypes 仅在开发模式下进行检查。
+
+### PropTypes 验证类型
+
+以下提供了使用不同验证器的例子：
+```js
+import PropTypes from 'prop-types';
+
+MyComponent.propTypes = {
+  // 你可以将属性声明为 JS 原生类型，默认情况下
+  // 这些属性都是可选的。
+  optionalArray: PropTypes.array,
+  optionalBool: PropTypes.bool,
+  optionalFunc: PropTypes.func,
+  optionalNumber: PropTypes.number,
+  optionalObject: PropTypes.object,
+  optionalString: PropTypes.string,
+  optionalSymbol: PropTypes.symbol,
+
+  // 任何可被渲染的元素（包括数字、字符串、元素或数组）
+  // (或 Fragment) 也包含这些类型。
+  optionalNode: PropTypes.node,
+
+  // 一个 React 元素。
+  optionalElement: PropTypes.element,
+
+  // 一个 React 元素类型（即，MyComponent）。
+  optionalElementType: PropTypes.elementType,
+
+  // 你也可以声明 prop 为类的实例，这里使用
+  // JS 的 instanceof 操作符。
+  optionalMessage: PropTypes.instanceOf(Message),
+
+  // 你可以让你的 prop 只能是特定的值，指定它为
+  // 枚举类型。
+  optionalEnum: PropTypes.oneOf(['News', 'Photos']),
+
+  // 一个对象可以是几种类型中的任意一个类型
+  optionalUnion: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Message)
+  ]),
+
+  // 可以指定一个数组由某一类型的元素组成
+  optionalArrayOf: PropTypes.arrayOf(PropTypes.number),
+
+  // 可以指定一个对象由某一类型的值组成
+  optionalObjectOf: PropTypes.objectOf(PropTypes.number),
+
+  // 可以指定一个对象由特定的类型值组成
+  optionalObjectWithShape: PropTypes.shape({
+    color: PropTypes.string,
+    fontSize: PropTypes.number
+  }),
+
+  // An object with warnings on extra properties
+  optionalObjectWithStrictShape: PropTypes.exact({
+    name: PropTypes.string,
+    quantity: PropTypes.number
+  }),
+
+  // 你可以在任何 PropTypes 属性后面加上 `isRequired` ，确保
+  // 这个 prop 没有被提供时，会打印警告信息。
+  requiredFunc: PropTypes.func.isRequired,
+
+  // 任意类型的必需数据
+  requiredAny: PropTypes.any.isRequired,
+
+  // 你可以指定一个自定义验证器。它在验证失败时应返回一个 Error 对象。
+  // 请不要使用 `console.warn` 或抛出异常，因为这在 `oneOfType` 中不会起作用。
+  customProp: function(props, propName, componentName) {
+    if (!/matchme/.test(props[propName])) {
+      return new Error(
+        'Invalid prop `' + propName + '` supplied to' +
+        ' `' + componentName + '`. Validation failed.'
+      );
+    }
+  },
+
+  // 你也可以提供一个自定义的 `arrayOf` 或 `objectOf` 验证器。
+  // 它应该在验证失败时返回一个 Error 对象。
+  // 验证器将验证数组或对象中的每个值。验证器的前两个参数
+  // 第一个是数组或对象本身
+  // 第二个是他们当前的键。
+  customArrayProp: PropTypes.arrayOf(function(propValue, key, componentName, location, propFullName) {
+    if (!/matchme/.test(propValue[key])) {
+      return new Error(
+        'Invalid prop `' + propFullName + '` supplied to' +
+        ' `' + componentName + '`. Validation failed.'
+      );
+    }
+  })
+};
+```
+### 限制单个元素
+你可以通过 PropTypes.element 来确保传递给组件的 children 中只包含一个元素。
+```js
+import PropTypes from 'prop-types';
+
+class MyComponent extends React.Component {
+  render() {
+    // 这必须只有一个元素，否则控制台会打印警告。
+    const children = this.props.children;
+    return (
+      <div>
+        {children}
+      </div>
+    );
+  }
+}
+
+MyComponent.propTypes = {
+  children: PropTypes.element.isRequired
+};
+```
+
+### 默认 Prop 值
+您可以通过配置特定的 defaultProps 属性来定义 props 的默认值：
+```js
+class Greeting extends React.Component {
+  render() {
+    return (
+      <h1>Hello, {this.props.name}</h1>
+    );
+  }
+}
+
+// 指定 props 的默认值：
+Greeting.defaultProps = {
+  name: 'Stranger'
+};
+
+// 渲染出 "Hello, Stranger"：
+ReactDOM.render(
+  <Greeting />,
+  document.getElementById('example')
+);
+```
+如果你正在使用像 transform-class-properties 的 Babel 转换工具，你也可以在 React 组件类中声明 defaultProps 作为静态属性。此语法提案还没有最终确定，需要进行编译后才能在浏览器中运行。要了解更多信息，请查阅 class fields proposal。
+```js
+class Greeting extends React.Component {
+  static defaultProps = {
+    name: 'stranger'
+  }
+
+  render() {
+    return (
+      <div>Hello, {this.props.name}</div>
+    )
+  }
+}
+```
+defaultProps 用于确保 this.props.name 在父组件没有指定其值时，有一个默认值。propTypes 类型检查发生在 defaultProps 赋值后，所以类型检查也适用于 defaultProps。
+
 
 ## 概念
 

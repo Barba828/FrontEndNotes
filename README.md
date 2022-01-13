@@ -4,7 +4,9 @@
 
 ### 在线浏览
 
-点击前往 [GitBooks](https://barba828.github.io/FrontEndNotes/)
+前往Github [GitBooks](https://barba828.github.io/FrontEndNotes/)
+
+前往Gitee [GitBooks](http://barba.gitee.io/frontendnotes)
 
 ### 本地预览
 
@@ -16,5 +18,3 @@ docsify serve docs
 ```
 
 ### [docsify](https://docsify.js.org/#/zh-cn/quickstart)
-
-<!--  -->

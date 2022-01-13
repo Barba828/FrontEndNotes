@@ -502,6 +502,7 @@ function Person(name,age){
     }
 }
 function Female(){
+  	this.gender = 'f'
     Person.apply(this,arguments)//将父元素所有方法在这里执行一遍就继承了
 }
 var dot = new Female('Dot',2)
@@ -518,6 +519,8 @@ function log(){
 
 bind返回对应函数, 便于稍后调用； apply, call则是立即调用。
 
+#####                                                                    箭头函数区别
+
 除此外, 在 ES6 的箭头函数下, call 和 apply 将失效, 对于箭头函数来说:
 
 - 箭头函数体内的 this 对象, 就是定义时所在的对象, 而不是使用时所在的对象;所以不需要类似于var _this = this这种丑陋的写法
@@ -525,12 +528,4 @@ bind返回对应函数, 便于稍后调用； apply, call则是立即调用。
 - 箭头函数不可以使用 arguments 对象,，该对象在函数体内不存在. 如果要用, 可以用 Rest 参数代替
 - 不可以使用 yield 命令, 因此箭头函数不能用作 Generator 函数，什么是Generator函数可自行查阅资料，推荐阅读阮一峰Generator 函数的含义与用法，Generator 函数的异步应用
 
-作者：_Dot912
-链接：https://www.jianshu.com/p/bc541afad6ee
-来源：简书
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
-
 ### [重新介绍Js](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/A_re-introduction_to_JavaScript)
-```
-
-```
