@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+const childProcess = require("child_process");
+
+try {
+  childProcess.execSync("npm run sidebar");
+  childProcess.execSync("git add ./docs/_sidebar.md");
+} catch (error) {
+  console.log(error.stdout.toString());
+  process.exit(1);
+}

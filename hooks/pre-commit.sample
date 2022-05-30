@@ -1,0 +1,8 @@
+#!/bin/sh
+# 执行 sidebar 脚本，如果不正确需要将退出码设为非零
+npm run sidebar
+git add ./docs/_sidebar.md
+
+# 获取上面脚本的退出码
+exitCode="$?"
+exit $exitCode

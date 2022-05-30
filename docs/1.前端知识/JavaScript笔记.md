@@ -216,14 +216,14 @@ class Promise {
       if (this.status === PENDING) {
         this.status = FULFILLED
         this.value = val
-        this.onResolvedCallbacks.forEach(fn=>fn());
+        this.onResolvedCallbacks.forEach(fn => fn());
       }
     }
     let reject = (error) => {
       if (this.status === PENDING) {
         this.status = REJECTED
         this.reason = error
-        this.onRejectedCallbacks.forEach(fn=>fn());
+        this.onRejectedCallbacks.forEach(fn => fn());
       }
     }
     try {
@@ -607,8 +607,6 @@ myPromise = (promise) =>
 const [err, data] = myPromise(fn);
 ```
 
-
-
 ## Generator
 
 [Generator 函数——阮一峰](http://www.ruanyifeng.com/blog/2015/04/generator.html)
@@ -619,15 +617,15 @@ const [err, data] = myPromise(fn);
 
 协程有点像函数，又有点像线程。它的运行流程大致如下。
 
-> 第一步，协程A开始执行。
+> 第一步，协程 A 开始执行。
 >
-> 第二步，协程A执行到一半，进入暂停，执行权转移到协程B。
+> 第二步，协程 A 执行到一半，进入暂停，执行权转移到协程 B。
 >
-> 第三步，（一段时间后）协程B交还执行权。
+> 第三步，（一段时间后）协程 B 交还执行权。
 >
-> 第四步，协程A恢复执行。
+> 第四步，协程 A 恢复执行。
 
-上面流程的协程A，就是异步任务，因为它分成两段（或多段）执行。
+上面流程的协程 A，就是异步任务，因为它分成两段（或多段）执行。
 
 举例来说，读取文件的协程写法如下。
 
@@ -639,16 +637,16 @@ const [err, data] = myPromise(fn);
 > }
 > ```
 
-上面代码的函数 asyncJob 是一个协程，它的奥妙就在其中的 yield 命令。它表示执行到此处，执行权将交给其他协程。也就是说，yield命令是异步两个阶段的分界线。
+上面代码的函数 asyncJob 是一个协程，它的奥妙就在其中的 yield 命令。它表示执行到此处，执行权将交给其他协程。也就是说，yield 命令是异步两个阶段的分界线。
 
-协程遇到 yield 命令就暂停，等到执行权返回，再从暂停的地方继续往后执行。它的最大优点，就是代码的写法非常像同步操作，如果去除yield命令，简直一模一样。
+协程遇到 yield 命令就暂停，等到执行权返回，再从暂停的地方继续往后执行。它的最大优点，就是代码的写法非常像同步操作，如果去除 yield 命令，简直一模一样。
 
 ### 使用
 
 Generator 函数是协程在 ES6 的实现，最大特点就是可以交出函数的执行权（即暂停执行）。
 
 > ```javascript
-> function* gen(x){
+> function* gen(x) {
 >   var y = yield x + 2;
 >   return y;
 > }
@@ -660,9 +658,9 @@ Generator 函数是协程在 ES6 的实现，最大特点就是可以交出函�
 
 > ```javascript
 > var g = gen(1);
-> g.next() // { value: 3, done: false }
-> g.next() // { value: undefined, done: true }
-> 
+> g.next(); // { value: 3, done: false }
+> g.next(); // { value: undefined, done: true }
+>
 > for (let value of gen(1)) {
 >   // 可获取遍历value
 > }
@@ -672,8 +670,6 @@ Generator 函数是协程在 ES6 的实现，最大特点就是可以交出函�
 
 换言之，next 方法的作用是分阶段执行 Generator 函数。每次调用 next 方法，会返回一个对象，表示当前阶段的信息（ value 属性和 done 属性）。value 属性是 yield 语句后面表达式的值，表示当前阶段的值；done 属性是一个布尔值，表示 Generator 函数是否执行完毕，即是否还有下一个阶段。
 
-
-
 ### 数据交换和错误处理
 
 Generator 函数可以暂停执行和恢复执行，这是它能封装异步任务的根本原因。除此之外，它还有两个特性，使它可以作为异步编程的完整解决方案：函数体内外的数据交换和错误处理机制。
@@ -681,17 +677,17 @@ Generator 函数可以暂停执行和恢复执行，这是它能封装异步任�
 next 方法返回值的 value 属性，是 Generator 函数向外输出数据；next 方法还可以接受参数，这是向 Generator 函数体内输入数据。
 
 > ```javascript
-> function* gen(x){
+> function* gen(x) {
 >   var y = yield x + 2;
 >   return y;
 > }
-> 
+>
 > var g = gen(1);
-> g.next() // { value: 3, done: false }
-> g.next(2) // { value: 2, done: true }
+> g.next(); // { value: 3, done: false }
+> g.next(2); // { value: 2, done: true }
 > ```
 
-上面代码中，第一个 next 方法的 value 属性，返回表达式 x + 2 的值（3）。第二个 next 方法带有参数2，这个参数可以传入 Generator 函数，作为上个阶段异步任务的返回结果，被函数体内的变量 y 接收。因此，这一步的 value 属性，返回的就是2（变量 y 的值）。
+上面代码中，第一个 next 方法的 value 属性，返回表达式 x + 2 的值（3）。第二个 next 方法带有参数 2，这个参数可以传入 Generator 函数，作为上个阶段异步任务的返回结果，被函数体内的变量 y 接收。因此，这一步的 value 属性，返回的就是 2（变量 y 的值）。
 
 Generator 函数内部还可以部署错误处理代码，捕获函数体外抛出的错误。
 
@@ -699,12 +695,12 @@ Generator 函数内部还可以部署错误处理代码，捕获函数体外抛�
 > function* gen(x){
 >   try {
 >     var y = yield x + 2;
->   } catch (e){ 
+>   } catch (e){
 >     console.log(e);
 >   }
 >   return y;
 > }
-> 
+>
 > var g = gen(1);
 > g.next();
 > g.throw（'出错了'）;
@@ -715,13 +711,13 @@ Generator 函数内部还可以部署错误处理代码，捕获函数体外抛�
 
 ### 异步任务
 
-在generator中使用了Promise
+在 generator 中使用了 Promise
 
 > ```javascript
-> var fetch = require('node-fetch');
-> 
-> function* gen(){
->   var url = 'https://api.github.com/users/github';
+> var fetch = require("node-fetch");
+>
+> function* gen() {
+>   var url = "https://api.github.com/users/github";
 >   var result = yield fetch(url);
 >   console.log(result.bio);
 > }
@@ -734,19 +730,21 @@ Generator 函数内部还可以部署错误处理代码，捕获函数体外抛�
 > ```javascript
 > var g = gen();
 > var result = g.next();
-> 
-> result.value.then(function(data){
->   return data.json();
-> }).then(function(data){
->   g.next(data);
-> });
+>
+> result.value
+>   .then(function (data) {
+>     return data.json();
+>   })
+>   .then(function (data) {
+>     g.next(data);
+>   });
 > ```
 
-上面代码中，首先执行 Generator 函数，获取遍历器对象，然后使用 next 方法（第二行），执行异步任务的第一阶段。由于 [Fetch 模块](https://github.com/bitinn/node-fetch)返回的是一个 Promise 对象，因此要用 then 方法调用下一个next 方法。
+上面代码中，首先执行 Generator 函数，获取遍历器对象，然后使用 next 方法（第二行），执行异步任务的第一阶段。由于 [Fetch 模块](https://github.com/bitinn/node-fetch)返回的是一个 Promise 对象，因此要用 then 方法调用下一个 next 方法。
 
 ### await
 
-借助Promise简单实现async await的效果
+借助 Promise 简单实现 async await 的效果
 
 ```js
 //promise异步任务1
@@ -787,8 +785,6 @@ function* test() {
 //async await的方式调用generator语句
 runner(test);
 ```
-
-
 
 ## [事件委托](https://www.cnblogs.com/liugang-vip/p/5616484.html)
 
@@ -1088,30 +1084,30 @@ oUl.addEventListener("click", function (ev) {
 
 ### js 原型遵循 5 个规则
 
-1、所有的引用类型（数组、对象、函数），都具有对象特性，即可自由扩展属性（除了“null”以外）；
+1. 所有的引用类型（数组、对象、函数），都具有对象特性，即可自由扩展属性（除了“null”以外）；
+2. 所有的引用类型（数组、对象、函数），都有一个`__proto__`（隐式原型）属性，属性值是一个普通的对象；
+3. 所有的函数，都有一个 prototype（显式原型）属性，属性值也是一个普通对象；
+4. 所有的引用类型（数组、对象、函数），`__proto__`属性值指向（完全相等）它的构造函数的“prototype”属性值；
+5. 当试图得到一个对象的某个属性时，如果这个对象本身没有这个属性，那么会去**proto**（即它的构造函数的 prototype 中）寻找。
 
-2、所有的引用类型（数组、对象、函数），都有一个`__proto__`（隐式原型）属性，属性值是一个普通的对象；
+#### 理解：
 
-3、所有的函数，都有一个 prototype（显式原型）属性，属性值也是一个普通对象；
+实例的**proto**等于该实例构造函数的 prototype
 
-4、所有的引用类型（数组、对象、函数），`__proto__`属性值指向（完全相等）它的构造函数的“prototype”属性值；
+```js
+function Person() {}
+var p = new Person();
 
-5、当试图得到一个对象的某个属性时，如果这个对象本身没有这个属性，那么会去**proto**（即它的构造函数的 prototype 中）寻找。
+p.__proto__ === Person.prototype; // true
+```
 
-**理解：**
+而实例的构造函数的 prototype 等于该构造函数的构造函数的 prototype，以此类推，直到最终的**proto**是 Object.prototype，即 Object.prototype.**proto** 是 null。
 
 prototype 指向一块内存，这个内存里面有共用属性
-
 **proto** 指向同一块内存
-
 prototype 和 **proto** 的不同点在于
-
-prototype 是构造函数的属性，而 **proto** 是对象的属性
-
-难点在于……构造函数也是对象！
-
+prototype 是构造函数的属性，而 **proto** 是对象的属性(构造函数也是对象！)
 如果没有 prototype，那么共用属性就没有立足之地
-
 如果没有 **proto**，那么一个对象就不知道自己的共用属性有哪些。
 
 有一个类如下：
@@ -1137,15 +1133,13 @@ Function.prototype
 
 1，2 两问其实问的是同一个问题，都是考察原型链相关的知识，我们只需要记住一句话就可以迎刃而解。实例的**proto**属性（原型）等于其构造函数的 prototype 属性。实例 p 的构造函数为 Person，而 Person 的构造函数为 Function
 
-### new
+### new 操作符
 
 核心功能即：绑定对象`__proto__`到对象类`prototype`上
 
-> 1.  创建一个新对象，同时继承对象类的原型，即 Person.prototype；
->
-> 2.  执行对象类的构造函数，同时该实例的属性和方法被 this 所引用，即 this 指向新构造的实例；
->
-> 3.  如果构造函数 return 了一个新的“对象”，那么这个对象就会取代整个 new 出来的结果。如果构造函数没有 return 对象，那么就会返回步骤 1 所创建的对象，即隐式返回 this。（一般情况下构造函数不会返回任何值，不过在一些特殊情况下，如果用户想覆盖这个值，可以选择返回一个普通的对象来覆盖。）
+1. 创建一个新对象，同时继承对象类的原型，即 Person.prototype；
+2. 执行对象类的构造函数，同时该实例的属性和方法被 this 所引用，即 this 指向新构造的实例；
+3. 如果构造函数 return 了一个新的“对象”，那么这个对象就会取代整个 new 出来的结果。如果构造函数没有 return 对象，那么就会返回步骤 1 所创建的对象，即隐式返回 this。（一般情况下构造函数不会返回任何值，不过在一些特殊情况下，如果用户想覆盖这个值，可以选择返回一个普通的对象来覆盖。）
 
 代码实现
 
@@ -1241,8 +1235,6 @@ bar.call(); //等价
 
 #### 数组对象 this
 
-`arr[0]() `理解为`arr.0()`
-
 ```js
 function fn() {
   console.log(this);
@@ -1289,9 +1281,29 @@ btn.addEventListener(
 );
 ```
 
-## 任务队列
+## 任务队列 Event Loop
 
-因 JS 为单线程，所以需要一个任务队列规划调度任务。
+因 JS 为单线程，所以需要一个任务队列规划调度任务。通过事件循环，浏览器可以利用任务队列来管理任务，让异步事件非阻塞地执行。每个客户端对应的事件循环是相对独立的。
+Event Loop 可以理解为一个消息分发器，通过接收和分发不同类型的消息，让执行程序的事件调度更加合理。
+
+#### 浏览器事件循环顺序
+
+浏览器事件循环是以浏览器为宿主环境实现的事件调度，操作顺序如下：
+
+1. 执行同步代码。
+2. 执行一个任务（执行栈中没有就从任务队列中获取）。
+3. 执行过程中如果遇到微任务，就将它添加到微任务的任务队列中。
+4. 任务执行完毕后，立即执行当前微任务队列中的所有微任务（依次执行）。
+5. 当前任务执行完毕，开始检查渲染，然后渲染线程接管进行渲染。
+6. 渲染完毕后，JavaScript 线程继续接管，开始下一个循环。
+
+#### 浏览器为什么需要事件循环 ​
+
+由于 JavaScript 是单线程的，且 JavaScript 主线程和渲染线程互斥，如果异步操作（如上图提到的 WebAPIs）阻塞 JavaScript 的执行，会造成浏览器假死。而事件循环为浏览器引入了任务队列（task queue），使得异步任务可以非阻塞地进行。
+
+一个事件循环有一个或多个任务队列。任务队列是任务的集合，而不是队列。因为事件处理模型会选取第一个可执行任务开始执行，而不是队首的任务。
+
+浏览器事件循环在处理异步任务时不会一直等待其返回结果，而是将这个事件挂起，继续执行栈中的其他任务。当异步事件返回结果，将它放到任务队列中，被放入任务队列不会立刻执行回调，而是等待当前执行栈中所有任务都执行完毕，主线程处于空闲状态，主线程会去查找任务队列中是否有任务，如果有，取出排在第一位的事件，并把这个事件对应的回调放到执行栈中，执行其中的同步代码。
 
 ### 任务类型
 
@@ -1299,7 +1311,8 @@ btn.addEventListener(
 
 为了单线程的插队
 
-一个 Event Loop，Microtask 是在 Macrotask 之后调用，Microtask 会在下一个 Event Loop 之前执行调用完，并且其中会将 Microtask 执行当中新注册的 Microtask 一并调用执行完，然后才开始下一次 Event loop，所以如果有新的 Macrotask 就需要一直等待，等到上一个 Event loop 当中 Microtask 被清空为止。由此可见， 我们可以在下一次 Event loop 之前进行插队。如果不区分 Microtask 和 Macrotask，那就无法在下一次 Event loop 之前进行插队，其中新注册的任务得等到下一个 Macrotask 完成之后才能进行，这中间可能你需要的状态就无法在下一个 Macrotask 中得到同步。状态的同步对于视图来说至关重要，这也就牵扯到了为什么 javascript 是单线程的原因所在。
+一个 Event Loop，Microtask 是在 Macrotask 之后调用，Microtask 会在下一个 Event Loop 之前执行调用完，并且其中会将 Microtask 执行当中新注册的 Microtask 一并调用执行完，然后才开始下一次 Event loop，所以如果有新的 Macrotask 就需要一直等待，等到上一个 Event loop 当中 Microtask 被清空为止。
+由此可见，我们可以在下一次 Event loop 之前进行插队。如果不区分 Microtask 和 Macrotask，那就无法在下一次 Event loop 之前进行插队，其中新注册的任务得等到下一个 Macrotask 完成之后才能进行，这中间可能你需要的状态就无法在下一个 Macrotask 中得到同步。状态的同步对于视图来说至关重要，这也就牵扯到了为什么 javascript 是单线程的原因所在。
 
 #### 宏任务
 
@@ -1553,11 +1566,11 @@ for (let item in arr) {
 
 #### 去重
 
-- 法一：indexOf循环去重 
+- 法一：indexOf 循环去重
 
-- 法二：ES6 Set去重；Array.from(new Set(array)) 
+- 法二：ES6 Set 去重；Array.from(new Set(array))
 
-- 法三：Object 键值对去重；把数组的值存成 Object 的 key 值，比如 Object[value1] = true，在判断另一个值的时候，如果 Object[value2]存在的话，就说明该值是重复的。 
+- 法三：Object 键值对去重；把数组的值存成 Object 的 key 值，比如 Object[value1] = true，在判断另一个值的时候，如果 Object[value2]存在的话，就说明该值是重复的。
 
 ## Map 和 Object
 
@@ -1579,7 +1592,7 @@ for (let item in arr) {
 const o = {};
 const m = new Map();
 o[Symbol.iterator] !== undefined; // false
-m[Symbol.iterator] !== undefined; // true 
+m[Symbol.iterator] !== undefined; // true
 ```
 
 1. 在 Map 中新增键时，不会覆盖其原型上的键；而在 Object 中新增键时，则有可能覆盖其原型上的键
@@ -1589,7 +1602,7 @@ Object.prototype.x = 1;
 const o = {x:2};
 const m = new Map([[x,2]]);
 o.x; // 2，x = 1 被覆盖了
-m.x; // 1，x = 1 不会被覆盖 
+m.x; // 1，x = 1 不会被覆盖
 ```
 
 1. JSON 默认支持 Object 而不支持 Map。若想要通过 JSON 传输 Map 则需要使用到 .toJSON() 方法，然后在 JSON.parse() 中传入复原函数来将其复原。
@@ -1622,23 +1635,23 @@ const m2 = JSON.parse(JSON.stringify(m)) // {}
 
 ## 监听对象属性
 
-比如在VUE中自动监听属性的变动，我们假设这里有一个user对象
+比如在 VUE 中自动监听属性的变动，我们假设这里有一个 user 对象
 
 ### Object.defineProperty
 
-在ES5中可以通过Object.defineProperty来实现已有属性的监听 （Vue 2.+）
+在 ES5 中可以通过 Object.defineProperty 来实现已有属性的监听 （Vue 2.+）
 
 ```js
 Object.defineProperty(user,'name',{
-set：function(key,value){
-}
+  set：function(key,value){}
 })
 ```
-缺点：如果id不在user对象中，则不能监听id的变化 
+
+缺点：如果 id 不在 user 对象中，则不能监听 id 的变化
 
 ### Proxy
 
-在ES6中可以通过Proxy来实现 （Vue 3.0）
+在 ES6 中可以通过 Proxy 来实现 （Vue 3.0）
 
 ```js
 var  user = new Proxy({}，{
@@ -1646,9 +1659,7 @@ var  user = new Proxy({}，{
 })
 ```
 
-这样即使有属性在user中不存在，通过user.id来定义也同样可以这样监听这个属性的变化哦~ 
-
-
+这样即使有属性在 user 中不存在，通过 user.id 来定义也同样可以这样监听这个属性的变化哦~
 
 ## 定时任务
 
@@ -1658,22 +1669,23 @@ var  user = new Proxy({}，{
 
 ### requestAnimationFrame
 
-[参考requestAnimationFrame](http://www.cnblogs.com/xiaohuochai/p/5777186.html)
+[参考 requestAnimationFrame](http://www.cnblogs.com/xiaohuochai/p/5777186.html)
 
-与setTimeout和setInterval不同，requestAnimationFrame不需要设置时间间隔，
-大多数电脑显示器的刷新频率是60Hz，大概相当于每秒钟重绘60次。大多数浏览器都会对重绘操作加以限制，不超过显示器的重绘频率，因为即使超过那个频率用户体验也不会有提升。因此，最平滑动画的最佳循环间隔是1000ms/60，约等于16.6ms。 
+与 setTimeout 和 setInterval 不同，requestAnimationFrame 不需要设置时间间隔，
+大多数电脑显示器的刷新频率是 60Hz，大概相当于每秒钟重绘 60 次。大多数浏览器都会对重绘操作加以限制，不超过显示器的重绘频率，因为即使超过那个频率用户体验也不会有提升。因此，最平滑动画的最佳循环间隔是 1000ms/60，约等于 16.6ms。
 
-RAF采用的是系统时间间隔，不会因为前面的任务，不会影响RAF，但是如果前面的任务多的话，
-会响应setTimeout和setInterval真正运行时的时间间隔。 
+RAF 采用的是系统时间间隔，不会因为前面的任务，不会影响 RAF，但是如果前面的任务多的话，
+会响应 setTimeout 和 setInterval 真正运行时的时间间隔。
 
 特点：
 
-1. requestAnimationFrame会把每一帧中的所有DOM操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率。 
+1. requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率。
 
-2. 在隐藏或不可见的元素中，requestAnimationFrame将不会进行重绘或回流，这当然就意味着更少的CPU、GPU和内存使用量 
-3. requestAnimationFrame是由浏览器专门为动画提供的API，在运行时浏览器会自动优化方法的调用，并且如果页面不是激活状态下的话，动画会自动暂停，有效节省了CPU开销。
+2. 在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的 CPU、GPU 和内存使用量
+3. requestAnimationFrame 是由浏览器专门为动画提供的 API，在运行时浏览器会自动优化方法的调用，并且如果页面不是激活状态下的话，动画会自动暂停，有效节省了 CPU 开销。
 
 ### 类型判断
+
 typeof()，instanceof，Object.prototype.toString.call()等
 
 #### typeof
@@ -1700,12 +1712,12 @@ function：Function
 
 #### Object.prototype.toString.call
 
-对于 `Object.prototype.toString.call(arg)`，若参数为 `null` 或 `undefined`，直接返回结果。 
+对于 `Object.prototype.toString.call(arg)`，若参数为 `null` 或 `undefined`，直接返回结果。
 
 ```js
-Object.prototype.toString.call(null);       // => "[object Null]"
+Object.prototype.toString.call(null); // => "[object Null]"
 
-Object.prototype.toString.call(undefined);  // => "[object Undefined]"
+Object.prototype.toString.call(undefined); // => "[object Undefined]"
 ```
 
 若参数不为 `null` 或 `undefined`，则将参数转为对象，再作判断。对于原始类型，转为对象的方法即装箱，此处不赘述。
@@ -1713,7 +1725,9 @@ Object.prototype.toString.call(undefined);  // => "[object Undefined]"
 转为对象后，取得该对象的 `[Symbol.toStringTag]` 属性值（可能会遍历原型链）作为 `tag`，如无该属性，或该属性值不为字符串类型，则依下表取得 `tag`, 然后返回 `"[object " + tag + "]"` 形式的字符串。
 
 ## 闭包
+
 一句话可以概括：闭包就是能够读取其他函数内部变量的函数，或者子函数在外调用，子函数所在的父函数的作用域不会被释放
+
 ```js
 function test(){
 	var user = "Tom";
@@ -1723,50 +1737,57 @@ function test(){
 	}
 }
 ```
+
 ### 什么是闭包
+
 闭包是指有权访问另外一个函数作用域中的变量的函数。
 
-MDN对闭包的定义是：闭包是指那些能够访问自由变量的函数，自由变量是指在函数中使用的，但既不是函数参数又不是函数的局部变量的变量，由此可以看出，闭包=函数+函数能够访问的自由变量
+MDN 对闭包的定义是：闭包是指那些能够访问自由变量的函数，自由变量是指在函数中使用的，但既不是函数参数又不是函数的局部变量的变量，由此可以看出，闭包=函数+函数能够访问的自由变量
 
 闭包就是函数的局部变量集合，只是这些局部变量在函数返回后会继续存在。闭包就是就是函数的“堆栈”在函数返回后并不释放，我们也可以理解为这些函数堆栈并不在栈上分配而是在堆上分配。当在一个函数内定义另外一个函数就会产生闭包。
 
 ### 为什么要用
 
-- 匿名自执行函数：我们知道所有的变量，如果不加上var关键字，则默认的会添加到全局对象的属性上去，这样的临时变量加入全局对象有很多坏处，比如：别的函数可能误用这些变量；造成全局对象过于庞大，影响访问速度(因为变量的取值是需要从原型链上遍历的)。除了每次使用变量都是用var关键字外，我们在实际情况下经常遇到这样一种情况，即有的函数只需要执行一次，其内部变量无需维护，可以用闭包。
+- 匿名自执行函数：我们知道所有的变量，如果不加上 var 关键字，则默认的会添加到全局对象的属性上去，这样的临时变量加入全局对象有很多坏处，比如：别的函数可能误用这些变量；造成全局对象过于庞大，影响访问速度(因为变量的取值是需要从原型链上遍历的)。除了每次使用变量都是用 var 关键字外，我们在实际情况下经常遇到这样一种情况，即有的函数只需要执行一次，其内部变量无需维护，可以用闭包。
 - 结果缓存：我们开发中会碰到很多情况，设想我们有一个处理过程很耗时的函数对象，每次调用都会花费很长时间，那么我们就需要将计算出来的值存储起来，当调用这个函数的时候，首先在缓存中查找，如果找不到，则进行计算，然后更新缓存并返回值，如果找到了，直接返回查找到的值即可。闭包正是可以做到这一点，因为它不会释放外部的引用，从而函数内部的值可以得以保留。
 - 封装：封装私有变量，实现类和继承等。
 - 模仿块级作用域
 
 ### 闭包案例
+
 异步打印
+
 ```js
-for(let i=0;i<5;i++){
-  setTimeout(function(){
-  	console.log(i)
-  },1000*i)
-}
-```
-闭包实现
-```js
-for(var i=0;i<5;i++){
-  (function(i){
-    setTimeout(function(){
-    	console.log(i)
-    },1000*i)
-  })(i)
+for (let i = 0; i < 5; i++) {
+  setTimeout(function () {
+    console.log(i);
+  }, 1000 * i);
 }
 ```
 
-#####  实现一个once函数，传入函数参数只执行一次
+闭包实现
+
 ```js
-function ones(func){
-  var tag=true;
-  return function(){
-    if(tag==true){
-      func.apply(null,arguments);
-      tag=false;
+for (var i = 0; i < 5; i++) {
+  (function (i) {
+    setTimeout(function () {
+      console.log(i);
+    }, 1000 * i);
+  })(i);
+}
+```
+
+##### 实现一个 once 函数，传入函数参数只执行一次
+
+```js
+function ones(func) {
+  var tag = true;
+  return function () {
+    if (tag == true) {
+      func.apply(null, arguments);
+      tag = false;
     }
-  }
+  };
 }
 ```
 
@@ -1776,17 +1797,17 @@ function ones(func){
 
 有：①focus
 
- ②blur
+②blur
 
- ③mouseenter
+③mouseenter
 
- ④mouseleave
+④mouseleave
 
- ⑤load
+⑤load
 
- ⑥unload
+⑥unload
 
- ⑦resize
+⑦resize
 
 **hasOwnProperty：** 是用来判断一个对象是否有你给出名称的属性或对象。不过需要注意的是，此方法无法检查该对象的原型链中是否具有该属性，该属性必须是对象本身的一个成员。
 
@@ -1822,9 +1843,9 @@ Last-Modified: Tue, 11 Jul 2000 18:23:51 GMT(服务端对该资源最后修改�
 Refresh: 1;url=http://www.it315.org(服务端要求客户端1秒钟后，刷新，然后访问指定的页面路径)
 Content-Disposition: attachment; filename=aaa.zip(服务端要求客户端以下载文件的方式打开该文件)
 Transfer-Encoding: chunked(分块传递数据到客户端）  
- Set-Cookie:SS=Q0=5Lb*nQ; path=/search(服务端发送到客户端的暂存数据)
+ Set-Cookie:SS=Q0=5Lb\*nQ; path=/search(服务端发送到客户端的暂存数据)
 Expires: -1//3 种(服务端禁止客户端缓存页面数据)
-Cache-Control: no-\*\**(服务端禁止客户端缓存页面数据)  
+Cache-Control: no-\*\*\*(服务端禁止客户端缓存页面数据)  
  Pragma: no-\_\*\*(服务端禁止客户端缓存页面数据)  
  Connection: close(1.0)/(1.1)Keep-Alive(维护客户端和服务端的连接关系)
 
@@ -1923,10 +1944,12 @@ for (const iterator of arr) {
 ```
 
 #### 数组求子集
-假设数组长度为n，[1,2,3,...,n]
-那么所有子集则为长度为n的000...000到长度为n的111...111
+
+假设数组长度为 n，[1,2,3,...,n]
+那么所有子集则为长度为 n 的 000...000 到长度为 n 的 111...111
+
 ```js
-const subsets =  (nums) => {
+const subsets = (nums) => {
   let res = [];
   let len = nums.length;
   //假设len为6
@@ -1934,20 +1957,20 @@ const subsets =  (nums) => {
   for (let i = 0; i < 1 << len; i++) {
     //临时子集
     let arr = [];
-    
+
     //方案1:转换为2进制字符串，再分割为数组，如：['1','0','1','0']
     let flag = i.toString(2).split("");
     flag.forEach((item, index) => {
-    	//'1'则表示加入子集，flag.length - 1 - index获取数组下标
-      item === '1' && arr.push(nums[flag.length - 1 - index]);
+      //'1'则表示加入子集，flag.length - 1 - index获取数组下标
+      item === "1" && arr.push(nums[flag.length - 1 - index]);
     });
-    
+
     //方案2:2进制数字分别与第n位做与运算，获取2进制数字中1的位置
     for (let j = 0; j < len; j++) {
       //获取到i，如：001010，分别与j的二进制（如：000001，000010）做与运算，获取原数组下标
       if (i & (1 << j)) arr.push(nums[j]);
     }
-    
+
     //子集加入res
     res.push(arr);
   }
@@ -1958,7 +1981,9 @@ console.log(subsets([1, 2, 3, 4, 5, 6]));
 ```
 
 #### 字符串全排列
-使用set去重
+
+使用 set 去重
+
 ```js
 function permutate(str) {
   let result = new Set();

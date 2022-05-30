@@ -141,21 +141,19 @@ Observable is able to subscribe to the Observer.
 
 ### 组合操作符
 
-
 ```js
 // combineLatest 实际上是从每个 source 取最新的响应值然后返回有x个元素的数组。每个 source 对应一个元素
-Rx.Observable.combineLatest([ source_1, ...  source_n])
+Rx.Observable.combineLatest([source_1, ...source_n]);
 // 业务场景是当你对每个 source 的最新值感兴趣，而对过往的值不感兴趣，当然你要有一个以上想要组合的 source
 
 //组合后的 observable 接收了第一个 source 的所有值然后先将它们发出，然后再接收 source 2的所有值，所以说 concat() 操作符中的 source 顺序很重要
-Rx.Observable.concat([ source_1,... sournce_n ])
+Rx.Observable.concat([source_1, ...sournce_n]);
 //当遇到应该优先考虑某个 source 的情况时，就要使用 concat 操作符
 
 //可以将多个流合并成一个
-Rx.Observable.merge(source_1, ...  source_n)
+Rx.Observable.merge(source_1, ...source_n);
 
 //以列为基础连接值的。它将采用最小的共同标准
-Rx.Observable.zip(source_1, ...  source_n)
+Rx.Observable.zip(source_1, ...source_n);
 // 如果你真正关心不同 sources 在同一个位置所发出值的区别，假设所有 sources 的第2个响应值，那么你需要 zip操作符
 ```
-

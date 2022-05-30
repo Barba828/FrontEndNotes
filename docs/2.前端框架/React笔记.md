@@ -183,35 +183,42 @@ VUE 中通过 v-model 实现双向绑定，好处是减少了修改 state 的模
 ### 生命周期
 
 #### Constructor
+
 1. 用于初始化操作，一般很少使用
-2. 唯一一个直接修改state的地方，其他地方通过调用this.setState()方法。
+2. 唯一一个直接修改 state 的地方，其他地方通过调用 this.setState()方法。
 
 #### componentDidMount
-1. UI渲染完成后调用
+
+1. UI 渲染完成后调用
 2. 只执行一次
 3. 典型场景：获取外部资源
 
 #### componentDidUpdate
-1. 每次UI更新被调用
-2. 典型场景：页面通过props重新获取数据
+
+1. 每次 UI 更新被调用
+2. 典型场景：页面通过 props 重新获取数据
 
 #### componentWillUnmount
+
 1. 组件被移除时调用
 2. 典型场景：资源释放
 
 #### getSnapshotBeforeUpdate
-1. 在render之前调用，state已更新
-2. 典型场景：获取render之前的dom状态
+
+1. 在 render 之前调用，state 已更新
+2. 典型场景：获取 render 之前的 dom 状态
 
 #### getDerivedStateFromProps
-1. 当state需要从props初始化时，使用
+
+1. 当 state 需要从 props 初始化时，使用
 2. 尽量不使用，维护俩者状态需要消耗额外资源，增加复杂度
-3. 每次render都会调用
+3. 每次 render 都会调用
 4. 典型场景表单获取默认值
 
 #### shouldComponentUpdate
-1. 觉得Vistual Dom是否重绘
-2. 一般可以由PuerComponent自动实现
+
+1. 觉得 Vistual Dom 是否重绘
+2. 一般可以由 PuerComponent 自动实现
 3. 典型场景：性能优化
 
 #### UNSAFE_componentWillReceiveProps
@@ -678,8 +685,8 @@ diff 算法用于计算出两个 virtual dom 的差异，是 react 中开销最�
 传统 diff 算法通过循环递归对比差异，算法复杂度为 O(n3)。
 react diff 算法制定了三条策略，将算法复杂度从 O(n3)降低到 O(n)。
 
-- WebUI 中 DOM 节点跨节点的操作特别少，可以忽略不计。
-- 拥有相同类的组件会拥有相似的 DOM 结构。拥有不同类的组件会生成不同的 DOM 结构。
+- WebUI 中 DOM 节点跨节点的操作特别少，可以忽略不计。（即跨节点层级的操作直接抛弃旧 DOM，用新的 DOM 树）
+- 拥有相同类的组件会拥有相似的 DOM 结构。拥有不同类的组件会生成不同的 DOM 结构。（即不同类型组件的结构不需要进一步递归）
 - 同一层级的子节点，可以根据唯一的`ID`来区分。
 
 针对这三个策略，react diff 实施的具体策略是:
@@ -760,22 +767,20 @@ class Father extends Component {
 ## PropTypes
 
 随着你的应用程序不断增长，你可以通过类型检查捕获大量错误。对于某些应用程序来说，你可以使用 Flow 或 TypeScript 等 JavaScript 扩展来对整个应用程序做类型检查。但即使你不使用这些扩展，React 也内置了一些类型检查的功能。要在组件的 props 上进行类型检查，你只需配置特定的 propTypes 属性：
+
 ```js
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 class Greeting extends React.Component {
   render() {
-    return (
-      <h1>Hello, {this.props.name}</h1>
-    );
+    return <h1>Hello, {this.props.name}</h1>;
   }
 }
 
 Greeting.propTypes = {
-  name: PropTypes.string
+  name: PropTypes.string,
 };
 ```
-
 
 在此示例中，我们使用的是 class 组件，但是同样的功能也可用于函数组件，或者是由 React.memo/React.forwardRef 创建的组件。
 PropTypes 提供一系列验证器，可用于确保组件接收到的数据类型是有效的。在本例中, 我们使用了 PropTypes.string。当传入的 prop 值类型不正确时，JavaScript 控制台将会显示警告。出于性能方面的考虑，propTypes 仅在开发模式下进行检查。
@@ -783,8 +788,9 @@ PropTypes 提供一系列验证器，可用于确保组件接收到的数据类�
 ### PropTypes 验证类型
 
 以下提供了使用不同验证器的例子：
+
 ```js
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 MyComponent.propTypes = {
   // 你可以将属性声明为 JS 原生类型，默认情况下
@@ -813,13 +819,13 @@ MyComponent.propTypes = {
 
   // 你可以让你的 prop 只能是特定的值，指定它为
   // 枚举类型。
-  optionalEnum: PropTypes.oneOf(['News', 'Photos']),
+  optionalEnum: PropTypes.oneOf(["News", "Photos"]),
 
   // 一个对象可以是几种类型中的任意一个类型
   optionalUnion: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
-    PropTypes.instanceOf(Message)
+    PropTypes.instanceOf(Message),
   ]),
 
   // 可以指定一个数组由某一类型的元素组成
@@ -831,13 +837,13 @@ MyComponent.propTypes = {
   // 可以指定一个对象由特定的类型值组成
   optionalObjectWithShape: PropTypes.shape({
     color: PropTypes.string,
-    fontSize: PropTypes.number
+    fontSize: PropTypes.number,
   }),
 
   // An object with warnings on extra properties
   optionalObjectWithStrictShape: PropTypes.exact({
     name: PropTypes.string,
-    quantity: PropTypes.number
+    quantity: PropTypes.number,
   }),
 
   // 你可以在任何 PropTypes 属性后面加上 `isRequired` ，确保
@@ -849,11 +855,15 @@ MyComponent.propTypes = {
 
   // 你可以指定一个自定义验证器。它在验证失败时应返回一个 Error 对象。
   // 请不要使用 `console.warn` 或抛出异常，因为这在 `oneOfType` 中不会起作用。
-  customProp: function(props, propName, componentName) {
+  customProp: function (props, propName, componentName) {
     if (!/matchme/.test(props[propName])) {
       return new Error(
-        'Invalid prop `' + propName + '` supplied to' +
-        ' `' + componentName + '`. Validation failed.'
+        "Invalid prop `" +
+          propName +
+          "` supplied to" +
+          " `" +
+          componentName +
+          "`. Validation failed."
       );
     }
   },
@@ -863,76 +873,82 @@ MyComponent.propTypes = {
   // 验证器将验证数组或对象中的每个值。验证器的前两个参数
   // 第一个是数组或对象本身
   // 第二个是他们当前的键。
-  customArrayProp: PropTypes.arrayOf(function(propValue, key, componentName, location, propFullName) {
+  customArrayProp: PropTypes.arrayOf(function (
+    propValue,
+    key,
+    componentName,
+    location,
+    propFullName
+  ) {
     if (!/matchme/.test(propValue[key])) {
       return new Error(
-        'Invalid prop `' + propFullName + '` supplied to' +
-        ' `' + componentName + '`. Validation failed.'
+        "Invalid prop `" +
+          propFullName +
+          "` supplied to" +
+          " `" +
+          componentName +
+          "`. Validation failed."
       );
     }
-  })
+  }),
 };
 ```
+
 ### 限制单个元素
+
 你可以通过 PropTypes.element 来确保传递给组件的 children 中只包含一个元素。
+
 ```js
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 class MyComponent extends React.Component {
   render() {
     // 这必须只有一个元素，否则控制台会打印警告。
     const children = this.props.children;
-    return (
-      <div>
-        {children}
-      </div>
-    );
+    return <div>{children}</div>;
   }
 }
 
 MyComponent.propTypes = {
-  children: PropTypes.element.isRequired
+  children: PropTypes.element.isRequired,
 };
 ```
 
 ### 默认 Prop 值
+
 您可以通过配置特定的 defaultProps 属性来定义 props 的默认值：
+
 ```js
 class Greeting extends React.Component {
   render() {
-    return (
-      <h1>Hello, {this.props.name}</h1>
-    );
+    return <h1>Hello, {this.props.name}</h1>;
   }
 }
 
 // 指定 props 的默认值：
 Greeting.defaultProps = {
-  name: 'Stranger'
+  name: "Stranger",
 };
 
 // 渲染出 "Hello, Stranger"：
-ReactDOM.render(
-  <Greeting />,
-  document.getElementById('example')
-);
+ReactDOM.render(<Greeting />, document.getElementById("example"));
 ```
+
 如果你正在使用像 transform-class-properties 的 Babel 转换工具，你也可以在 React 组件类中声明 defaultProps 作为静态属性。此语法提案还没有最终确定，需要进行编译后才能在浏览器中运行。要了解更多信息，请查阅 class fields proposal。
+
 ```js
 class Greeting extends React.Component {
   static defaultProps = {
-    name: 'stranger'
-  }
+    name: "stranger",
+  };
 
   render() {
-    return (
-      <div>Hello, {this.props.name}</div>
-    )
+    return <div>Hello, {this.props.name}</div>;
   }
 }
 ```
-defaultProps 用于确保 this.props.name 在父组件没有指定其值时，有一个默认值。propTypes 类型检查发生在 defaultProps 赋值后，所以类型检查也适用于 defaultProps。
 
+defaultProps 用于确保 this.props.name 在父组件没有指定其值时，有一个默认值。propTypes 类型检查发生在 defaultProps 赋值后，所以类型检查也适用于 defaultProps。
 
 ## 概念
 
@@ -1012,6 +1028,7 @@ React 支持一个特殊的、可以附加到任何组件上的 `ref` 属性。�
 谨慎使用 ref。如果你发现自己经常使用 ref 来在应用中“实现想要的功能”，你可以考虑去了解一下[自上而下的数据流](https://react.docschina.org/docs/lifting-state-up.html)。
 
 #### 协调
+
 当组件的 props 或 state 发生变化时，React 通过将最新返回的元素与原先渲染的元素进行比较，来决定是否有必要进行一次实际的 DOM 更新。当它们不相等时，React 才会更新 DOM。这个过程被称为“协调”。
 
 #### Fiber
@@ -1027,6 +1044,7 @@ React Fiber 把更新过程碎片化，每执行完一段更新过程，就把�
 维护每一个分片的数据结构，就是 Fiber。
 
 ## 路由原理
+
 说到 React 我们一定离不开和 Router 打交道。不管 Vue Router 和 React Router ，他们的原理都是差不多的。这篇文章会从一个简单的例子一直拓展到真正的 React Router。
 
 什么是路由
@@ -1050,32 +1068,31 @@ function Register() {
 }
 
 function App() {
-  let [UI, setUI] = useState('Login');
+  let [UI, setUI] = useState("Login");
   let onClickLogin = () => {
-    setUI('Login')
-  }
+    setUI("Login");
+  };
   let onClickRegister = () => {
-    setUI('Register') 
-  }
+    setUI("Register");
+  };
   let showUI = () => {
-    switch(UI) {
-      case 'Login':
-        return <Login/>
-      case 'Register':
-        return <Register/>
+    switch (UI) {
+      case "Login":
+        return <Login />;
+      case "Register":
+        return <Register />;
     }
-  }
+  };
   return (
     <div className="App">
       <button onClick={onClickLogin}>Login</button>
       <button onClick={onClickRegister}>Register</button>
-      <div>
-          {showUI()}
-      </div>
+      <div>{showUI()}</div>
     </div>
   );
 }
 ```
+
 这个其实就是路由的雏形了，每个页面对应着一个组件，然后在不同状态下去切换 。
 
 ### 使用 hash 来切换
@@ -1095,33 +1112,31 @@ hash 属性是一个可读可写的字符串，该字符串是 URL 的锚部分�
 ```js
 function App() {
   // 进入页面时，先初始化当前 url 对应的组件名
-  let hash = window.location.hash
-  let initUI = hash === '#login' ? 'login' : 'register'
+  let hash = window.location.hash;
+  let initUI = hash === "#login" ? "login" : "register";
 
   let [UI, setUI] = useState(initUI);
   let onClickLogin = () => {
-    setUI('Login')
-    window.location.hash = 'login'
-  }
+    setUI("Login");
+    window.location.hash = "login";
+  };
   let onClickRegister = () => {
-    setUI('Register') 
-    window.location.hash = 'register'
-  }
+    setUI("Register");
+    window.location.hash = "register";
+  };
   let showUI = () => {
-    switch(UI) {
-      case 'Login':
-        return <Login/>
-      case 'Register':
-        return <Register/>
+    switch (UI) {
+      case "Login":
+        return <Login />;
+      case "Register":
+        return <Register />;
     }
-  }
+  };
   return (
     <div className="App">
       <button onClick={onClickLogin}>Login</button>
       <button onClick={onClickRegister}>Register</button>
-      <div>
-          {showUI()}
-      </div>
+      <div>{showUI()}</div>
     </div>
   );
 }
@@ -1138,33 +1153,31 @@ pathname 属性是一个可读可写的字符串，可设置或返回当前 URL 
 ```js
 function App() {
   // 进入页面时，先初始化当前 url 对应的组件名
-  let pathname = window.location.pathname
-  let initUI = pathname === '/login' ? 'login' : 'register'
+  let pathname = window.location.pathname;
+  let initUI = pathname === "/login" ? "login" : "register";
 
   let [UI, setUI] = useState(initUI);
   let onClickLogin = () => {
-    setUI('Login')
-    window.location.pathname = 'login'
-  }
+    setUI("Login");
+    window.location.pathname = "login";
+  };
   let onClickRegister = () => {
-    setUI('Register') 
-    window.location.pathname = 'register'
-  }
+    setUI("Register");
+    window.location.pathname = "register";
+  };
   let showUI = () => {
-    switch(UI) {
-      case 'Login':
-        return <Login/>
-      case 'Register':
-        return <Register/>
+    switch (UI) {
+      case "Login":
+        return <Login />;
+      case "Register":
+        return <Register />;
     }
-  }
+  };
   return (
     <div className="App">
       <button onClick={onClickLogin}>Login</button>
       <button onClick={onClickRegister}>Register</button>
-      <div>
-          {showUI()}
-      </div>
+      <div>{showUI()}</div>
     </div>
   );
 }
@@ -1181,33 +1194,31 @@ function App() {
 ```js
 function App() {
   // 进入页面时，先初始化当前 url 对应的组件名
-  let pathname = window.location.pathname
-  let initUI = pathname === '/login' ? 'login' : 'register'
+  let pathname = window.location.pathname;
+  let initUI = pathname === "/login" ? "login" : "register";
 
   let [UI, setUI] = useState(initUI);
   let onClickLogin = () => {
-    setUI('Login')
-    window.history.pushState(null, '', '/login')
-  }
+    setUI("Login");
+    window.history.pushState(null, "", "/login");
+  };
   let onClickRegister = () => {
-    setUI('Register') 
-    window.history.pushState(null, '', '/register')
-  }
+    setUI("Register");
+    window.history.pushState(null, "", "/register");
+  };
   let showUI = () => {
-    switch(UI) {
-      case 'Login':
-        return <Login/>
-      case 'Register':
-        return <Register/>
+    switch (UI) {
+      case "Login":
+        return <Login />;
+      case "Register":
+        return <Register />;
     }
-  }
+  };
   return (
     <div className="App">
       <button onClick={onClickLogin}>Login</button>
       <button onClick={onClickRegister}>Register</button>
-      <div>
-          {showUI()}
-      </div>
+      <div>{showUI()}</div>
     </div>
   );
 }
@@ -1228,10 +1239,10 @@ function App() {
 react-router 和 react-router-dom
 
 - react-router: 实现了路由的核心功能。
-- react-router-dom: 基于react-router，加入了在浏览器运行环境下的一些功能。
-- react-router-native: 基于react-router，加入了在React Native 运行环境下的一些功能。
+- react-router-dom: 基于 react-router，加入了在浏览器运行环境下的一些功能。
+- react-router-native: 基于 react-router，加入了在 React Native 运行环境下的一些功能。
 
-实际上React Native推荐使用基于原生路由的react-navigation
+实际上 React Native 推荐使用基于原生路由的 react-navigation
 
 ### 重构
 
@@ -1251,18 +1262,16 @@ function Register() {
 function App() {
   return (
     <Router>
-        <div className="App">
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+      <div className="App">
+        <Link to="/login">Login</Link>
+        <Link to="/register">Register</Link>
 
-            <Route path="/login" component={Login}></Route>
-            <Route path="/register" component={Register}></Route>
-        </div>
+        <Route path="/login" component={Login}></Route>
+        <Route path="/register" component={Register}></Route>
+      </div>
     </Router>
-
   );
 }
 ```
 
 可以看到 React Router 帮我们做了很多的事。比如正则的匹配，路由的切换等等。
-

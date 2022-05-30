@@ -2,11 +2,9 @@
 
 个人前端学习笔记
 
-### 在线浏览
+### GitBooks
 
-前往Github [GitBooks](https://barba828.github.io/FrontEndNotes/)
-
-前往Gitee [GitBooks](http://barba.gitee.io/frontendnotes)
+前往 Github [GitBooks](https://barba828.github.io/FrontEndNotes/)
 
 ### 本地预览
 
