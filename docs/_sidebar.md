@@ -24,9 +24,7 @@
   - [Console](3.Node/Console.md)
   - [Koa基础](3.Node/Koa基础.md)
   - [NPM基础](3.Node/NPM基础.md)
-  - [NVM基础](3.Node/NVM基础.md)
   - [Node基础](3.Node/Node基础.md)
-  - [WebSocket](3.Node/WebSocket.md)
   - [Yarn基础](3.Node/Yarn基础.md)
   - [前端模块化](3.Node/前端模块化.md)
 
@@ -36,6 +34,7 @@
 
 - 5.面试
   - [React](5.面试/React.md)
+  - [WebSocket](5.面试/WebSocket.md)
   - [api](5.面试/api.md)
   - [code](5.面试/code.md)
   - [工程化](5.面试/工程化.md)
