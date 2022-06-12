@@ -320,3 +320,19 @@ type Parameters<T extends (...args: any) => any> = T extends (
   ? P
   : never;
 ```
+
+### 自定义方法
+
+#### GetType
+
+获得函数的入参类型
+(arg: infer P)：arg 的类型待推断为 P
+整段代码的意思：如果 T 能赋值给(arg: infer P) => void，则返回 P，否则返回 string
+
+```ts
+type GetType<T> = T extends (arg: infer P) => void ? P : string;
+
+// example
+type StateType = GetType<typeof update>; // StateType => number
+function updata(state: number) {}
+```
