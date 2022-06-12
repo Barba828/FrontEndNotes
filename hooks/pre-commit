@@ -2,8 +2,9 @@
 const childProcess = require("child_process");
 
 try {
-  childProcess.execSync("npm run sidebar");
+  const trans_log = childProcess.execSync("npm run sidebar").toString();
   childProcess.execSync("git add ./docs/_sidebar.md");
+  console.log(trans_log);
 } catch (error) {
   console.log(error.stdout.toString());
   process.exit(1);
