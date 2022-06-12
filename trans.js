@@ -66,3 +66,5 @@ function setSidebar(content) {
 var list = getFileList(docsPath);
 var content = getFileContent(list);
 setSidebar(content);
+
+console.log("\x1B[46m", "docs目录已更新", "\x1B[0m", list.length, "个文件");
